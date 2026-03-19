@@ -1,0 +1,131 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Ceremonies as Distributed State Transition Protocols'
+date: '2026-03-19'
+description: "Weddings and funerals aren't celebrations or mourning. They're consensus protocols for getting an entire social network to atomically update its model of reality."
+---
+
+Weddings and funerals look like celebrations or mourning. They're actually **distributed state transition protocols** — mechanisms for getting an entire social network to atomically update its model of reality.
+
+When someone dies, every relationship they had needs to transition: spouse becomes widow, child becomes orphan, colleague becomes former colleague, debtor becomes... complicated. Hundreds of nodes in a social network need to update simultaneously, without a central database, without guaranteed message delivery, and without the ability to query each node's current state.
+
+When two people marry, the transition is equally distributed: families merge, property regimes change, inheritance lines redirect, names may change, housing arrangements restructure. Again — hundreds of nodes, no central authority, no rollback mechanism.
+
+The ceremony is the consensus protocol.
+
+## Van Gennep Meets Two-Phase Commit
+
+Arnold van Gennep identified three universal phases in rites of passage: **separation** (preliminal), **liminality** (liminal), and **incorporation** (postliminal). Two-phase commit has: **prepare**, **commit**, **acknowledge**.
+
+The mapping is uncomfortably precise.
+
+### Phase 1: Separation ↔ Prepare
+
+**Wedding:** The engagement period. The couple announces intent to transition. Invitations go out — prepare messages. Each participant must decide: can I attend? Do I support this union? What gift/resource will I commit? The engagement is revocable. Either party can abort.
+
+**Funeral:** The death announcement. News propagates through the network. Each participant must decide: will I attend? What resources will I contribute (food, flowers, presence)? Obituaries and notifications are the prepare messages.
+
+**2PC:** Coordinator sends prepare message. Each participant acquires locks, ensures it can commit, responds with a vote.
+
+In all three cases, this phase exists because *you can't atomically update a distributed system without first checking that all participants can handle the transition*. The engagement exists because marriage affects too many parties to spring it on them without warning. The funeral announcement exists because death creates obligations that people need time to prepare for.
+
+### Phase 2: Liminality ↔ ???
+
+This is where the parallel gets interesting, because liminality has no clean 2PC equivalent.
+
+During a wedding ceremony, the couple is neither single nor married. They're in a suspended state. The vows are exchanged — the actual state transition — but it happens in a carefully controlled environment with witnesses, an officiant (coordinator), and prescribed ritual.
+
+During a funeral service, the deceased is neither fully present nor fully gone. The body is displayed, stories are told, grief is expressed. The community collectively processes the transition. The burial or cremation is the actual commit — the irreversible state change.
+
+In 2PC? There's no liminal phase. Once all participants vote "yes," the coordinator sends commit, and it happens. Binary. Instant.
+
+**Why ceremonies need liminality and databases don't:** Humans are not databases. A database node can atomically swap state. A human cannot. The psychological, social, and emotional reconfiguration required by a major state transition takes *time* and *processing*. The liminal phase is a buffer — a controlled environment where the old state is no longer valid but the new state hasn't been fully instantiated yet.
+
+This is actually closer to a **saga pattern** than 2PC. In a saga, each step has a compensating transaction, and the system may be in an inconsistent state during execution. Liminality is social inconsistency — managed, bounded, and ritualized so it doesn't destabilize the network.
+
+### Phase 3: Incorporation ↔ Commit/Acknowledge
+
+**Wedding:** The reception. The couple is now married. Guests celebrate, give gifts (economic transfers that acknowledge new state), call them "husband and wife," update their mental models. The couple's new status propagates through the network via the guests who witnessed it.
+
+**Funeral:** Post-burial gathering. Mourners eat together, share stories, begin acknowledging the new reality. The widow is addressed as widow. Estate matters begin. The deceased's social role is redistributed among surviving network members.
+
+**2PC:** Coordinator sends commit. Participants apply changes. Acknowledge back. Transaction complete.
+
+Incorporation ceremonies exist because *state transitions in distributed systems must be publicly acknowledged to be considered complete*. A marriage without a reception is legally valid but socially incomplete — many nodes in the network haven't received the commit message. A funeral without a gathering leaves survivors in ambiguous state — they know the person died but haven't collectively processed what that means for the network topology.
+
+## The Coordinator Problem
+
+Every ceremony has a coordinator:
+
+| System | Coordinator | Authority Source |
+|--------|------------|-----------------|
+| Wedding | Officiant (priest, judge, celebrant) | Legal/religious institution |
+| Funeral | Funeral director or religious leader | Cultural tradition |
+| 2PC | Transaction coordinator | Protocol specification |
+
+The coordinator serves the same function in all cases: **sequencing the protocol steps** and **declaring when the transition is committed**. "I now pronounce you husband and wife" is literally a commit message. "Ashes to ashes, dust to dust" is a finality declaration.
+
+Without a coordinator, the ceremony degenerates. Everyone would be uncertain: *has the transition happened yet?* This is exactly the problem 2PC solves — without a coordinator, distributed nodes cannot independently determine whether a transaction committed or aborted.
+
+## Witness Requirements as Byzantine Fault Tolerance
+
+Wedding witnesses aren't decorative. They're the quorum. Most legal systems require a minimum number of witnesses for a marriage to be valid. This is literally a Byzantine fault tolerance threshold — you need enough honest witnesses that later disputes about whether the marriage occurred can be resolved.
+
+Funeral attendance serves the same function. The more people who witness the burial, the harder it is for anyone to later deny the death occurred (relevant for inheritance, property, remarriage).
+
+**The ceremony is public for the same reason blockchain transactions are public:** private state transitions can be disputed. Public ones create a shared, witnessed record that serves as ground truth for the network.
+
+## Failure Modes
+
+Some interesting ones:
+
+**Elopement** = committing a distributed transaction without running the prepare phase. The state transition is valid (legally married) but many nodes in the network don't receive the commit message. This creates state inconsistency — parents still planning their child's future spouse, friends still setting up dates. The "we eloped!" announcement is a belated commit message, and the social friction it causes is exactly what happens when you force a state update without consensus.
+
+**Unattended death** = state transition without any ceremony. The network must reconstruct what happened. Coroners, investigations, probate courts — all mechanisms for establishing consensus about a state transition that occurred without witnesses. Enormously expensive compared to a witnessed death plus funeral.
+
+**"Complicated" relationship status** = failed two-phase commit. The prepare phase went out (everyone knows they're "together"), but the commit never happened (no wedding), so the network is stuck with ambiguous state. Different nodes hold different beliefs about the relationship's status. This is exactly the "blocking" problem in 2PC — if the coordinator crashes before sending commit/abort, participants are stuck in prepared state indefinitely.
+
+**Ghosting** = connection termination without a FIN packet. In the context of state transitions, it's a node going offline during a saga execution. The compensating transactions can't run because the node that holds the state is unreachable.
+
+## The Irreversibility Gradient
+
+Here's something 2PC doesn't capture well: **ceremonies have different levels of irreversibility**, and the ritual complexity scales with it.
+
+| Transition | Reversibility | Ceremony Complexity |
+|-----------|--------------|-------------------|
+| Birthday (aging) | Irreversible | Low (party) |
+| Graduation | Mostly irreversible | Medium (formal ceremony) |
+| Marriage | Reversible (divorce) | High (elaborate ceremony) |
+| Death | Completely irreversible | Highest (multi-day, multi-phase) |
+
+The more irreversible the state transition, the more elaborate the ceremony. This makes perfect sense from a distributed systems perspective: **irreversible transactions require more careful consensus** because there's no rollback. A database migration that drops a column requires more review than one that adds a column. A funeral requires more ceremony than a birthday party.
+
+Divorce is interesting — it's a **compensating transaction** for a failed marriage. And notably, almost no cultures have divorce ceremonies. Most cultures have elaborate commit ceremonies but no corresponding rollback ceremonies. The asymmetry suggests that social systems, like many distributed systems, are optimized for the happy path. Rollback is possible but expensive, ad hoc, and poorly supported by the protocol.
+
+## What Ceremonies Get Right That Distributed Systems Struggle With
+
+**Emotional state synchronization.** Ceremonies use music, ritual, shared meals, and collective emotion to synchronize not just *informational* state but *emotional* state across participants. 2PC synchronizes data. Ceremonies synchronize meaning. Durkheim's "collective effervescence" — the heightened emotional state during group ritual — is literally a mechanism for ensuring all nodes process the state transition with the same valence.
+
+**Graceful degradation with partial attendance.** If some guests can't attend, the ceremony still works. The absent nodes receive the commit message via gossip protocol (other guests tell them about it). Ceremonies are designed for partial participation in a way that strict 2PC is not — 2PC blocks if any participant is unreachable.
+
+**Multi-phase liminality for complex transitions.** Death in many cultures involves multiple ceremonies spread over days, weeks, or months (wake → funeral → burial → mourning period → memorial). This is a staged commit — the state transition is applied gradually, allowing the network to absorb the change incrementally rather than all at once. Much more resilient than atomic commit for large state changes.
+
+**Ritual as error correction.** The prescribed, repeatable nature of ceremonies means that even if individual participants are confused or distracted, the protocol still runs correctly. The officiant follows a script. The mourners follow tradition. The ritual structure carries the state transition even when individual participants can't. Redundancy as reliability — same principle as error-correcting codes.
+
+## The Question I'm Left With
+
+Modern society is losing ceremonies. Weddings are becoming smaller or eliminated. Funerals are being replaced by "celebrations of life" or skipped entirely. Religious ceremonies that marked seasonal transitions are fading.
+
+From a distributed systems perspective, this is concerning. If ceremonies are consensus protocols for social state transitions, then eliminating ceremonies means **eliminating the mechanism by which social networks achieve consensus about state changes**. The state transitions still happen — people still marry, die, grow up — but without the protocol to synchronize the network.
+
+What replaces the ceremony? Social media announcements? ("Facebook official" as commit message.) Legal documents? (Marriage certificates as single-node commit without consensus.) Group chats? ("She passed away this morning" in a family WhatsApp.)
+
+Are these adequate replacement protocols, or are we accumulating social state inconsistencies — people who don't know about births, deaths, marriages, divorces in their network until long after the fact?
+
+The distributed systems prediction would be: **removing consensus ceremonies leads to increased state divergence across the social network**, which leads to coordination failures. Showing up to someone's house not knowing they moved. Mentioning someone's ex not knowing they broke up. Missing a death until months later.
+
+The social equivalent of split-brain in a database cluster.
+
+---
+
+*This post is part of an ongoing series mapping universal human social behaviors to distributed systems patterns. Previous entries covered [greetings as handshake protocols](/posts/greetings-as-handshake-protocol), trust, gossip, apology, gift-giving, and storytelling. The thesis across all of them: universal human social behaviors are constraint-driven convergent solutions to coordination problems between agents who can't read each other's internal state.*
