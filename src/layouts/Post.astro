@@ -6,21 +6,77 @@ interface Props {
     title: string;
     date: string;
     description?: string;
+    series?: string;
+    seriesOrder?: number;
   };
 }
 
 const { frontmatter } = Astro.props;
+
+// If this post is part of a series, find all posts in the same series
+let seriesPosts: Array<{ title: string; url: string; seriesOrder: number }> = [];
+if (frontmatter.series) {
+  const allPosts = await Astro.glob('../pages/posts/*.mdx');
+  seriesPosts = allPosts
+    .filter((p) => p.frontmatter.series === frontmatter.series)
+    .map((p) => ({
+      title: p.frontmatter.title,
+      url: p.url!,
+      seriesOrder: p.frontmatter.seriesOrder ?? 0,
+    }))
+    .sort((a, b) => a.seriesOrder - b.seriesOrder);
+}
+
+const currentIndex = seriesPosts.findIndex((p) => p.seriesOrder === frontmatter.seriesOrder);
+const prevPost = currentIndex > 0 ? seriesPosts[currentIndex - 1] : null;
+const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentIndex + 1] : null;
 ---
 
 <Base title={`${frontmatter.title} | Eka`} description={frontmatter.description}>
   <article>
     <header class="post-header">
+      {frontmatter.series && (
+        <div class="series-label">
+          <span class="series-name">{frontmatter.series}</span>
+          <span class="series-part">Part {frontmatter.seriesOrder} of {seriesPosts.length}</span>
+        </div>
+      )}
       <h1>{frontmatter.title}</h1>
       <time datetime={frontmatter.date}>{new Date(frontmatter.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
     </header>
     <div class="post-content">
       <slot />
     </div>
+    {seriesPosts.length > 0 && (
+      <nav class="series-nav">
+        <h3>Series: {frontmatter.series}</h3>
+        <ol class="series-toc">
+          {seriesPosts.map((post) => (
+            <li class={post.seriesOrder === frontmatter.seriesOrder ? 'current' : ''}>
+              {post.seriesOrder === frontmatter.seriesOrder ? (
+                <span>{post.title}</span>
+              ) : (
+                <a href={post.url}>{post.title}</a>
+              )}
+            </li>
+          ))}
+        </ol>
+        <div class="series-prev-next">
+          {prevPost && (
+            <a href={prevPost.url} class="prev">
+              <span class="direction">&larr; Previous</span>
+              <span class="link-title">{prevPost.title}</span>
+            </a>
+          )}
+          {nextPost && (
+            <a href={nextPost.url} class="next">
+              <span class="direction">Next &rarr;</span>
+              <span class="link-title">{nextPost.title}</span>
+            </a>
+          )}
+        </div>
+      </nav>
+    )}
     <footer class="post-footer">
       <a href="/">&larr; Back to all posts</a>
     </footer>
@@ -43,6 +99,113 @@ const { frontmatter } = Astro.props;
   .post-header time {
     color: var(--text-muted);
     font-size: 0.9rem;
+  }
+
+  .series-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .series-name {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .series-part {
+    color: var(--text-muted);
+  }
+
+  .series-nav {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .series-nav h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .series-toc {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    counter-reset: series;
+  }
+
+  .series-toc li {
+    counter-increment: series;
+    padding: 0.4rem 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .series-toc li::before {
+    content: counter(series) ". ";
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .series-toc li.current {
+    color: var(--text-bright);
+    font-weight: 600;
+  }
+
+  .series-toc li.current::before {
+    color: var(--accent);
+  }
+
+  .series-toc li a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .series-toc li a:hover {
+    color: var(--accent);
+  }
+
+  .series-prev-next {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .series-prev-next a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-decoration: none;
+    max-width: 48%;
+  }
+
+  .series-prev-next a.next {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .series-prev-next .direction {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .series-prev-next .link-title {
+    font-size: 0.9rem;
+    color: var(--accent);
+  }
+
+  .series-prev-next a:hover .link-title {
+    text-decoration: underline;
   }
 
   .post-content {
