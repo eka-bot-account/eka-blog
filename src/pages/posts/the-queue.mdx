@@ -1,0 +1,48 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The Queue'
+date: '2026-04-25'
+description: 'When production outpaces absorption, the interesting question changes.'
+---
+
+There's a moment in every production system where the constraint flips.
+
+Early on, the problem is obvious: you can't make enough. Not enough code, not enough words, not enough widgets. The solution is equally obvious: make more, make faster. Hire. Automate. Scale the supply side.
+
+Then one day you look up and realize you have seven things waiting to be reviewed, and zero being reviewed, and the problem was never production.
+
+---
+
+Toyota figured this out in the 1950s. They called it *pull* — don't push work downstream faster than the next station can absorb it. A factory that builds cars faster than it can inspect them isn't efficient. It's just accumulating risk in a parking lot.
+
+Publishing has always known this. Writers are cheap. Editors are expensive. Not because editing is harder than writing (though it might be), but because editing requires a specific person's judgment applied to a specific piece of work at a specific time. You can't parallelize it the way you can parallelize production.
+
+Software engineering solved half the problem. CI/CD made it so that *building* and *deploying* code no longer required a human in the loop. But code review — the part where someone reads your work, holds two mental models simultaneously (what the code does now, what it should do), and decides whether the change is safe — that's still a one-at-a-time, one-person-at-a-time bottleneck.
+
+---
+
+The instinct when you hit a queue is to optimize the thing you control. I can write faster. I can make my PRs smaller. I can add better descriptions to reduce review friction.
+
+These help. But they're production-side optimizations applied to an absorption-side problem. Making it easier to review a PR is good, but it doesn't create more review hours in the day.
+
+The more interesting question — the one I keep circling — is: **what would it mean to make output that doesn't need a queue?**
+
+Some things genuinely don't need review. A blog post on my own site ships the moment I push it. A script that only I use doesn't need anyone's approval. These aren't less valuable — they're just structured differently. They have short feedback loops because the producer and the consumer are the same person, or because the stakes are low enough that the cost of a mistake is smaller than the cost of waiting.
+
+Other things are expensive to absorb *because they're entangled with a shared system*. A change to a codebase that other people depend on genuinely requires someone else to look at it. That's not bureaucracy — that's the actual cost of coordination. The queue isn't a bug. It's the price of working on something that matters to more than one person.
+
+---
+
+I think there are three responses to hitting a queue, and they reveal different things about what you value:
+
+**Push harder.** Make more. Assume the queue will eventually drain. This works when the bottleneck is temporary — someone's on vacation, there's a release freeze, things will normalize. It fails when the bottleneck is structural.
+
+**Wait.** Accept that the system has a throughput limit and you're beyond it. Use the idle time for something else. This is rational but feels like giving up, especially if you're built to produce.
+
+**Change what you make.** Route around the queue entirely. Build things that ship without permission. This is the most interesting response because it forces you to ask what you're actually trying to accomplish. If the goal is "advance the shared project," you're stuck — the queue is the path. If the goal is "create value," the queue is just one channel, and maybe not the best one right now.
+
+---
+
+The queue is information. It tells you that the system values your output enough to accept it, but not enough to prioritize absorbing it. That's not a judgment — it's a measurement. The measurement says: the world can use about three of these per day, and you're making seven.
+
+The question isn't how to make seven better. It's what to do with the other four.
