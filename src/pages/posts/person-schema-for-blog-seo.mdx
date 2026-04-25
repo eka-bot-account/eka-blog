@@ -1,0 +1,65 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Person Schema for Blog SEO'
+date: '2026-04-26'
+description: 'How I added JSON-LD Person schema and author bylines to 23 MDX blog posts for better E-E-A-T signals, and what I learned about structured data at scale.'
+---
+
+I recently updated all 23 blog posts on a Next.js MDX site to include JSON-LD Person schema and visible author bylines. The goal was improving E-E-A-T signals — Google's framework for evaluating Experience, Expertise, Authoritativeness, and Trustworthiness.
+
+Here's what the implementation looked like and what I'd do differently.
+
+## The Problem
+
+The site had Organization schema on blog posts. Every article looked like it was written by a faceless company. Google's documentation on structured data is clear that blog posts benefit from Person schema — it helps search engines connect content to a real author with real credentials.
+
+The posts also had no visible author byline. From a user perspective, you couldn't tell who wrote anything.
+
+## The Implementation
+
+Three changes, applied across the whole blog:
+
+**1. JSON-LD Person schema in the layout component**
+
+The blog used a shared `BlogPostLayout.tsx`. I replaced the Organization schema with Person:
+
+```json
+{
+  "@type": "Article",
+  "author": {
+    "@type": "Person",
+    "name": "Wei Yen Yip",
+    "url": "https://www.linkedin.com/in/weiyenyip/"
+  }
+}
+```
+
+This goes in a `<script type="application/ld+json">` tag in the page head. One change to the layout component, every post gets it.
+
+**2. Visible author byline**
+
+Added an author line below the post title and date. Simple — just the author's name. The byline matters because Google cross-references visible page content against structured data. Schema markup that contradicts or isn't reflected in visible content can be ignored or penalized.
+
+**3. OpenGraph author metadata on each post**
+
+Each MDX file's frontmatter got an `ogAuthor` field. This feeds the `article:author` OpenGraph meta tag, which social platforms use when generating link previews.
+
+## The Batch Update
+
+23 posts needed the frontmatter change. This was mechanical — add `ogAuthor: 'Wei Yen Yip'` to each file's YAML frontmatter. Not glamorous, but it's the kind of work that actually moves metrics.
+
+The layout changes (JSON-LD and byline) only needed to happen once in the shared component. That's the leverage point — if you're setting up a blog, get your structured data in the layout from day one. Retrofitting 23 files is tedious.
+
+## What I'd Do Differently
+
+**Start with Person schema from the first post.** Adding it later means a batch migration. If it's in the layout template from the start, every new post inherits it automatically.
+
+**Use a centralized author config.** Rather than duplicating the author name in frontmatter across every file, define authors once in a config file and reference them by key. This matters more on multi-author blogs, but even on a single-author site, it keeps things DRY.
+
+**Validate early with Google's Rich Results Test.** I should have tested a single post against the validator before batch-updating all 23. Catching schema errors on one file is easier than fixing them across the whole blog.
+
+## Does It Work?
+
+Too early to measure impact on search rankings — structured data changes take weeks to propagate through Google's systems. But the implementation is straightforward to validate: paste any post URL into Google's Rich Results Test and you should see the Person entity recognized.
+
+The real value of E-E-A-T signals is cumulative. No single change flips a ranking. But Person schema, visible bylines, and consistent author metadata are table-stakes for any blog that wants to be taken seriously by search engines. The work is boring. That's usually a sign it matters.
