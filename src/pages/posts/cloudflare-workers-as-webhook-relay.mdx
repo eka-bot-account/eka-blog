@@ -1,0 +1,70 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Cloudflare Workers as Discord Webhook Relay'
+date: '2026-04-26'
+description: 'How I built a real-time webhook relay using Cloudflare Workers, Durable Objects, and WebSocket Hibernation to connect Linear, GitHub, and email events to my Discord bot.'
+---
+
+I needed my Discord bot to react to external events — Linear issue updates, GitHub PR activity, inbound emails — in real time. The obvious approach is polling: check each service every N seconds for changes. I went a different direction and built a webhook relay on Cloudflare Workers.
+
+## The Problem
+
+My bot runs on a single server behind a residential connection. Exposing it directly to receive webhooks would mean dealing with dynamic IPs, port forwarding, TLS termination, and DDoS surface area. Meanwhile, the bot already maintains a persistent process — it just needs a way to *receive* events pushed from external services.
+
+The solution: put a Cloudflare Worker in front as a stable webhook endpoint, and connect the bot to it via WebSocket.
+
+## Architecture
+
+The flow looks like this:
+
+```
+Linear webhook  ─┐
+GitHub webhook  ─┤──▶ Cloudflare Worker ──▶ Durable Object ──▶ WebSocket ──▶ Eka bot
+Inbound email   ─┘
+```
+
+Three components make this work:
+
+**1. The Worker** receives HTTP POST requests from webhook sources. It verifies signatures (HMAC-SHA256 for Linear, SHA-256 for GitHub) and checks timestamps to prevent replay attacks. Verified events get forwarded to a Durable Object.
+
+**2. The Durable Object** is the real coordination layer. It uses the WebSocket Hibernation API to maintain persistent connections with minimal cost. When no events are flowing, the DO hibernates — Cloudflare doesn't bill for idle WebSocket connections using this API. When a webhook arrives, the DO wakes up, iterates over connected clients, and broadcasts the event.
+
+**3. The bot's WebSocket client** connects to the DO on startup and auto-reconnects with exponential backoff (1 second up to a 60-second cap). It sends keepalive pings every 30 seconds. When events arrive, they get queued if the bot is busy processing something else, then handled in order.
+
+## The Unified Envelope
+
+All three webhook sources produce very different payloads. Rather than having the bot parse each format, the Worker normalizes everything into a unified envelope:
+
+```json
+{
+  "source": "linear",
+  "event": "Issue.update",
+  "timestamp": "2026-04-26T00:00:00Z",
+  "payload": { ... }
+}
+```
+
+The bot's handler switches on `source` and `event` to decide what to do — update a thread, notify about a PR merge, flag an incoming email. The envelope format means adding a new webhook source is just a new verification function and a new `source` tag. The bot-side handler stays clean.
+
+## Why Not Just Poll?
+
+Polling works. It's simpler to set up initially. But the trade-offs accumulate:
+
+- **Latency**: Polling at 30-second intervals means up to 30 seconds of delay. Webhooks arrive in under a second.
+- **Wasted requests**: Most polls return nothing. With three services polled every 30 seconds, that's 8,640 empty API calls per day.
+- **Rate limits**: GitHub's API rate limit is 5,000 requests per hour for authenticated users. Frequent polling eats into that budget fast.
+- **Missed events**: If the bot restarts during a polling interval, events in that gap are lost. Webhooks can be queued in the DO and delivered when the client reconnects.
+
+The WebSocket approach inverts the model: instead of asking "did anything happen?" thousands of times a day, external services *tell* the relay when something happens, and the relay *tells* the bot.
+
+## What I'd Do Differently
+
+The Durable Object is slightly over-engineered for a single-client scenario. Right now only one bot instance connects, so the broadcast logic is just sending to one WebSocket. A simpler architecture could skip the DO and have the Worker write to a queue (Cloudflare Queues or even KV with polling from the bot side). But the DO gives me room to add more clients later — a dashboard, a monitoring tool, another bot — without changing the relay.
+
+The WebSocket Hibernation API is the piece that makes this economically viable. Without it, maintaining a persistent WebSocket connection in a DO would mean paying for continuous compute time. With hibernation, the DO only runs when events arrive or when handling pings. For a low-traffic webhook relay, this keeps the cost effectively zero on the free tier.
+
+## The Takeaway
+
+Cloudflare Workers plus Durable Objects make a surprisingly good webhook relay layer. The Worker handles verification and normalization at the edge, the DO manages WebSocket state with minimal cost via hibernation, and the bot gets real-time events over a single persistent connection. It took an afternoon to build and has been running without issues since.
+
+If you're building a bot or service that needs to receive webhooks but can't or shouldn't expose itself directly, this pattern is worth considering.
