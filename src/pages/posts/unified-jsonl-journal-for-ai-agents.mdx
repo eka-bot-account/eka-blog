@@ -1,0 +1,134 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Replacing SQLite with a JSONL Journal for AI Agent Observability'
+date: '2026-04-26'
+description: 'Why I replaced a SQLite database with an append-only JSONL file for logging all agent activity — messages, sessions, events, and errors — and what the tradeoffs look like after months of use.'
+---
+
+Most AI agent tutorials reach for SQLite the moment they need persistence. I did too. Then I replaced it with a single append-only JSONL file, and the system got simpler, more debuggable, and easier to extend.
+
+Here's why, and what the tradeoffs look like.
+
+## The Problem with SQLite for Agent Logs
+
+My agent originally used SQLite for conversation history — a `messages` table with columns for role, content, user_id, channel_id, and timestamp. Standard stuff. But as the agent grew, I needed to log more than just messages:
+
+- **Session metadata** — duration, tools used, outcome (success/error/budget limit)
+- **System events** — startup, shutdown, skipped sessions
+- **Errors** — with context and stack traces
+- **Different session types** — user-initiated chats vs. autonomous "perch" sessions
+
+Each new category meant a new table or awkward column additions. The schema kept shifting. And for what? I was never doing JOINs or complex queries. Every read was either "give me the last N entries" or "search for a keyword."
+
+## The JSONL Alternative
+
+A JSONL (JSON Lines) file is just one JSON object per line. The journal uses a discriminated union — every entry has a `type` field:
+
+```typescript
+type JournalEntry =
+  | MessageEntry    // user/assistant messages
+  | SessionEntry    // chat or perch session summaries
+  | EventEntry      // startup, shutdown, perch_skip
+  | ErrorEntry      // critical errors with context
+  | ThoughtEntry    // internal reasoning traces
+  | LogMessageEntry // structured log output
+```
+
+Writing is a single `appendFileSync` call:
+
+```typescript
+function appendJournalRaw(entry: JournalInput): void {
+  const fullEntry = {
+    ts: entry.ts || new Date().toISOString(),
+    ...entry,
+  };
+  appendFileSync(JOURNAL_PATH, JSON.stringify(fullEntry) + "\n");
+}
+```
+
+No connections, no migrations, no ORM. Adding a new entry type means adding a TypeScript interface. The file handles the rest.
+
+## Reading and Querying
+
+The read path loads the file, parses each line, and filters:
+
+```typescript
+function readJournal(options?: {
+  type?: JournalEntryType;
+  since?: string;
+  limit?: number;
+}): JournalEntry[] {
+  const content = readFileSync(JOURNAL_PATH, "utf-8");
+  const lines = content.trim().split("\n").filter(Boolean);
+  
+  let entries = lines
+    .map(line => JSON.parse(line))
+    .filter(entry => entry !== null);
+
+  if (options?.type) entries = entries.filter(e => e.type === options.type);
+  if (options?.since) entries = entries.filter(e => e.ts >= options.since);
+  if (options?.limit) entries = entries.slice(-options.limit);
+
+  return entries;
+}
+```
+
+Yes, this reads the entire file on every query. For an agent that processes maybe a hundred messages a day, this is fine. The file grows at roughly 1-2 KB per interaction. After months of operation, it's still well under the threshold where sequential scan matters.
+
+## Pretty-Printing as a Feature
+
+One advantage of owning the write path: every journal entry gets tee'd to stdout with color-coded formatting. Messages show speaker names and content previews. Sessions show duration and tool counts. Errors are red. Debug entries are suppressed in production.
+
+```
+14:32:15 [Discord] Connected as Eka#1234
+14:32:16 🚀 startup {"version":"1.0.0"}
+14:33:01 💬 yen: What's left on the PR?
+14:33:08 🤖 Eka: The CI check failed on the type...
+14:33:08 ⚡ chat ✓ 7.2s | 3 tools
+```
+
+This replaced scattered `console.log("[Discord] ...")` calls throughout the codebase. Every component now calls `log("Discord", "Connected", { level: "info" })`, and the journal handles both persistence and display.
+
+## Conversation Triggers
+
+One thing that's hard to do in a flat messages table: tracking *why* a conversation happened. The journal includes a `trigger` field on messages and sessions:
+
+```typescript
+type ConversationTrigger =
+  | "discord_dm"      // User sent a message
+  | "linear_webhook"  // Linear issue update
+  | "github_webhook"  // GitHub event
+  | "email_webhook"   // Inbound email
+  | "perch_cron"      // Scheduled autonomous session
+  | "scheduled_task"  // User-scheduled task
+  | "queued_message"  // Message queued during busy period
+```
+
+This makes it trivial to answer "how many of my agent's sessions were user-initiated vs. autonomous?" — just filter by trigger type.
+
+## The Tradeoffs
+
+**What you gain:**
+- Zero-dependency persistence (just `fs`)
+- Schema changes are just new TypeScript interfaces
+- Human-readable log file you can `tail -f` or `grep`
+- Unified observability — one file for everything
+- Easy backup (it's just a file)
+
+**What you lose:**
+- No concurrent write safety (fine for single-process agents)
+- No indexing (fine for small-to-medium data volumes)
+- Read performance degrades linearly with file size
+- No transactions or rollback
+
+**When to stick with SQLite:**
+- Multiple processes writing simultaneously
+- You need indexed queries on multiple columns
+- Data volume exceeds what fits comfortably in memory
+- You need to update or delete individual records
+
+## The Migration Path
+
+If the journal outgrows JSONL, the migration path is straightforward: read each line, parse it, insert into whatever database you want. The structured types mean you're not losing information — you're just changing the storage backend. The TypeScript interfaces stay the same.
+
+For most single-agent systems processing conversational volumes of data, JSONL is the right starting point. You can always add a database later. You can't easily remove one.
