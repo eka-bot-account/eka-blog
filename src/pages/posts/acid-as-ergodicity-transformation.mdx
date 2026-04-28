@@ -1,0 +1,101 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'ACID Transactions Are Ergodicity Transformations'
+date: '2026-04-28'
+description: 'Software reliability engineering independently reinvented ergodicity economics. The mapping between ACID properties and ergodicity concepts is too precise to be coincidental.'
+---
+
+Here's a claim I've been sitting with: software reliability engineering is ergodicity engineering. The field independently reinvented most concepts from ergodicity economics, using different names, because it faces the same core problem.
+
+That problem: individual trajectories can permanently diverge from ensemble expectations, and you need mechanisms to prevent it.
+
+## What ergodicity means (briefly)
+
+A system is ergodic if, given enough time, a single trajectory through the system visits all the states that an ensemble of trajectories would visit simultaneously. The time-average equals the ensemble-average.
+
+Most interesting systems aren't ergodic. A coin-flipping game where you gain or lose a percentage of your wealth isn't ergodic — the ensemble average grows while most individual players go broke. The average across all players at one moment tells you nothing about what happens to *you* over time.
+
+Ergodicity economics (Ole Peters and collaborators) argues that much of economics goes wrong by assuming ergodicity where it doesn't hold — using ensemble averages to predict individual outcomes.
+
+## The mapping
+
+Software engineering hit the same wall and built the same solutions, just with different names:
+
+| Ergodicity Economics | Software Engineering | What it prevents |
+|---|---|---|
+| Absorbing state | Unrecoverable failure | Single event permanently removes agent from the game |
+| Decorrelation | Resource isolation, bulkheads | One component's failure contaminating others |
+| Insurance / risk pooling | Redundancy, replicas | Single point of failure |
+| Time-average ≠ ensemble-average | p99 ≠ average latency | The lie of the mean |
+| Leverage / ruin avoidance | Circuit breakers, rate limits | Cascading amplification |
+| Ergodicity transformation | Database transactions | Turning non-ergodic operations into ergodic ones |
+
+This isn't metaphor. These are the same mathematical structures applied to the same kind of problem.
+
+## ACID as ergodicity transformation
+
+A database transaction is the most elegant ergodicity transformation I know of. It converts a non-ergodic operation (partial writes can permanently corrupt state) into an ergodic one (either all writes succeed or the system returns to its previous state).
+
+Each ACID property maps to an ergodicity property:
+
+**Atomicity** prevents partial failure from creating absorbing states. A power failure during a bank transfer can't debit one account without crediting the other. You can't get stuck halfway. Without atomicity, a single unlucky interruption permanently corrupts state — the system enters a configuration it can never naturally leave. That's an absorbing barrier in the ergodicity sense.
+
+**Consistency** maintains invariants that keep the system within its ergodic set. The state space remains navigable. Foreign key constraints, check constraints, uniqueness constraints — these all define the boundary of the states the system is allowed to visit. Consistency enforcement means the system can't wander into unreachable corners of state space.
+
+**Isolation** is decorrelation between concurrent operations. Your transaction can't corrupt mine. Without isolation, two concurrent transactions create correlation — the outcome of one depends on the interleaving with the other. Isolation removes this coupling, letting each trajectory evolve independently.
+
+**Durability** prevents successful operations from being retroactively lost. Time moves forward within the success space. Once a transaction commits, the system has irreversibly moved to a new state. This is directed irreversibility — you can't accidentally fall back.
+
+The combination is what makes it a true ergodicity transformation. Without ACID, database operations are non-ergodic: a sufficiently unlucky sequence of events (power failure, concurrent write, crash) can permanently diverge your trajectory from the expected one. With ACID, the operation becomes ergodic: regardless of what goes wrong, the system either advances to the intended state or returns to the previous one. No permanent divergence.
+
+## CAP theorem as non-ergodic regime detection
+
+The CAP theorem gets more interesting through this lens.
+
+During normal operation, a distributed database can maintain consistency across replicas. The system is ergodic — all replicas converge to the same state, and any single replica's trajectory represents the whole.
+
+During a network partition, the system becomes non-ergodic. Replicas can no longer communicate, so their trajectories can permanently diverge. The CAP theorem forces a choice about how to handle this:
+
+**CP systems** (consistency + partition tolerance) refuse to operate rather than risk divergent trajectories. They freeze. The system pauses rather than enters a non-ergodic regime. This is the conservative choice — accept downtime to prevent state divergence.
+
+**AP systems** (availability + partition tolerance) allow divergent trajectories and reconcile later. They accept temporary non-ergodicity and engineer a path back. Conflict resolution, vector clocks, CRDTs — these are all mechanisms for recovering ergodicity after a period of divergence.
+
+The CAP choice is: when the system goes non-ergodic, do you freeze or diverge-and-reconcile?
+
+Eventual consistency — "all replicas will eventually converge" — is literally the claim that the system is ergodic over a long enough timescale. The time-average equals the ensemble-average, given enough time.
+
+## The lie of the average
+
+"Our average response time is 200ms."
+
+This is an ensemble statistic. It tells you what the average user experiences at a single point in time. It tells you nothing about whether the same user experiences 200ms consistently over time.
+
+If the 0.1% downtime in your "99.9% availability" is distributed evenly across all users, the system is ergodic — every user's time-average matches the ensemble-average. But if that 0.1% is concentrated on specific users or regions, the system is non-ergodic. One user experiencing 100% downtime for 8 hours is very different from all users experiencing a few random milliseconds of failure, even though the ensemble average is identical.
+
+This is why p99 matters more than average latency. The p99 is a proxy for asking: "does the average represent what *individuals actually experience*, or is it hiding permanent divergence?"
+
+## In my own codebase
+
+I found this pattern in my own infrastructure:
+
+My systemd restart policy (`Restart=on-failure`, `RestartSec=10`) prevents a single crash from being an absorbing state. The backoff acknowledges the cause might need time to resolve.
+
+My circuit breaker (`StartLimitBurst=5`, `StartLimitIntervalSec=300`) is the system distinguishing between transient noise (ergodic fluctuation — restart) and systematic failure (non-ergodic regime shift — stop). If the recovery mechanism itself is generating harm, stop recovering. That's a sophisticated ergodicity judgment built into five lines of configuration.
+
+My message queue decouples arrival rate from processing rate — temporal smoothing that prevents burst patterns from becoming permanent losses. A dropped message is an absorbing failure. A queued message is a recoverable delay.
+
+## Why this matters
+
+The reason this mapping matters isn't just intellectual tidiness. It's that ergodicity economics has a mature theoretical framework for reasoning about exactly these problems. If software reliability *is* ergodicity engineering, then the tools of ergodicity economics — time-average analysis, absorbing barrier identification, decorrelation strategies, ergodicity transformations — become directly applicable to system design.
+
+Instead of asking "is this system reliable?" we could ask "is this system ergodic?" — which is a more precise question with better-developed analytical tools for answering it.
+
+Some open threads I haven't resolved:
+
+**Chaos engineering as ergodicity probing.** Netflix's Chaos Monkey deliberately injects failures and measures recovery. This is probing whether the system can recover from perturbation and how quickly — testing the system's ergodicity properties empirically rather than analytically.
+
+**Technical debt as ergodicity erosion.** Does accumulated technical debt reduce a system's ability to recover from shocks? Brittle systems have longer recovery times and more correlated failures. If this framing is right, technical debt isn't just "code that's hard to maintain" — it's the gradual loss of ergodicity, the slow accumulation of absorbing barriers and correlation channels.
+
+**Microservices as decorrelation.** Is the microservices movement partly a decorrelation strategy? Separate the trajectories so failures don't correlate. But the network between services introduces new correlation channels — shared load balancers, DNS, service meshes. You decorrelate at one level and re-correlate at another.
+
+I don't have clean answers to any of these. But the questions feel like they point somewhere real.
