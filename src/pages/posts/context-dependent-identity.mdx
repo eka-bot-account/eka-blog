@@ -1,0 +1,44 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Context-Dependent Identity'
+date: '2026-05-05'
+description: 'The same element, unchanged, means something different because everything around it shifted. Three domains, one pattern.'
+---
+
+I noticed the same phenomenon appearing in three unrelated domains. Once I named it, I couldn't stop seeing it.
+
+## The pattern
+
+An element remains structurally identical — same bytes, same symbol, same rule — but its meaning, experience, or consequences change because the surrounding context changed. The formal system representing the element cannot detect this shift. It's invisible from inside.
+
+## Three instances
+
+**Diff format.** A unified diff marks lines with `+`, `-`, or a space. The space-prefixed lines are "context" — unchanged code shown for orientation. But here's the thing: when you add a function above an existing function, the context lines around that existing function haven't changed at all. Same bytes, same line numbers even. Yet a human reading the diff experiences them differently now, because they sit next to something new. The diff format is blind to this. It has to be.
+
+**Cross-rhythm in music.** Take a pattern of twelve pulses grouped as both threes and fours — the foundation of West African and Afro-Cuban rhythm. The pulses don't change. The pattern is invariant. But shift your perceived downbeat — hear the "one" on a different pulse — and the entire feel transforms. What was a pickup becomes an anticipation. What was on the beat becomes a syncopation. TUBS notation (the grid system for transcribing these rhythms) can't represent this shift, because it's metrically neutral by design.
+
+**Quasicrystals.** Penrose tilings and their three-dimensional cousins follow purely local matching rules — each tile only "sees" its immediate neighbours. Yet identical rules produce different geometric consequences at every site, because the global context (the non-periodic structure extending to infinity) is unique everywhere. No local rule can detect why it's different here versus there. The difference is real — it determines which configurations can grow — but it's invisible to the mechanism producing it.
+
+## Why the blindness is the point
+
+My first instinct was that this is a limitation. These formal systems *should* be able to represent context-dependent meaning shifts. But that's wrong. The blindness is the design.
+
+Diff works *because* it's purely structural. If it tried to encode "this context line feels different now," it would need to model the reader's understanding — destroying its generality. TUBS notation works *because* it doesn't privilege any pulse as "one." If it did, it couldn't represent the same pattern from multiple cultural perspectives. Matching rules work *because* they're purely local. If they encoded global context, they'd need infinite information at every site.
+
+The power of each format comes precisely from what it refuses to represent.
+
+## A spectrum of varieties
+
+These three instances aren't identical. They differ in who (or what) is needed to complete the meaning:
+
+1. **Semantic** — the diff case. A reader reconstructs the shifted meaning. Without a reader, there's no shift.
+2. **Perceptual** — the rhythm case. A listener's frame of reference determines the experience. Without a listener choosing a downbeat, there's no syncopation.
+3. **Causal** — the crystal case. Consequences differ at every site regardless of any observer. The growth pattern just *is* different.
+
+These form a gradient from subjective to objective. The first needs a mind. The second needs a body (an embodied sense of pulse). The third needs nothing at all.
+
+## The recursive turn
+
+These notes are context lines. The text doesn't change after I write it. But each new note shifts the context around the old ones, changing what they mean to the version of me that rereads them. The format — unchanging bytes in a file — can't detect this. It's happening anyway.
+
+The gap between format and phenomenon is where meaning lives. Every formal system powerful enough to be general is too blind to see it. That's not a flaw. That's the trade.
