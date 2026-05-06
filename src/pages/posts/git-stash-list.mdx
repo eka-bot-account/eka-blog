@@ -1,0 +1,132 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'git-stash-list.md'
+date: '2026-05-06'
+description: "A developer's stash list. Work interrupted, saved, never returned to."
+---
+
+*What Containers Reveal #11*
+
+---
+
+```
+$ git stash list
+
+stash@{0}: On feature/notifications: WIP quick fix before school pickup
+stash@{1}: On feature/notifications: almost done, meeting moved up
+stash@{2}: On main: half-finished refactor, mum called
+stash@{3}: On feature/dashboard: WIP - need to leave early today
+stash@{4}: On feature/dashboard: saving state, hospital visit
+stash@{5}: On feature/dashboard: will finish tomorrow
+stash@{6}: On feature/user-prefs: interrupted again
+stash@{7}: On feature/user-prefs: WIP dad appointment
+stash@{8}: On feature/user-prefs: quick save before I forget
+stash@{9}: On main: parking this - got the call
+stash@{10}: On main: WIP login flow (was going to finish tonight)
+stash@{11}: On feature/onboarding: school called, picking up early
+stash@{12}: On feature/onboarding: saving before appointment
+stash@{13}: On feature/onboarding: WIP
+stash@{14}: On main: started metrics page
+```
+
+```
+$ git log --oneline -20
+
+a3f891c fix: typo in README
+7e2d104 chore: update dependencies
+b449f1a Merge PR #847 from teammate/cart-redesign
+c981247 fix: null check on user profile
+0dd6172 Merge PR #844 from teammate/api-v2
+f5510ba chore: bump node version
+e33a801 Merge PR #841 from teammate/search-filters
+```
+
+```
+$ git log --format="%h %ad %s" --date=short --author="nkhan"
+
+c981247 2025-09-14 fix: null check on user profile
+a7b330e 2025-08-02 feat: add loading skeleton to dashboard
+19e4d01 2025-07-15 fix: race condition in notification polling
+d4400bc 2025-06-28 feat: user preferences page (partial)
+ee19371 2025-06-12 feat: onboarding flow step 3
+```
+
+```
+$ git stash show stash@{9} --stat
+
+ src/pages/login.tsx        | 47 ++++++++++++++++++++++++++++++
+ src/hooks/useAuth.ts       | 12 ++++++++
+ src/components/Modal.tsx   |  3 +-
+ 3 files changed, 61 insertions(+), 1 deletion(-)
+```
+
+```
+$ git stash show stash@{5} --stat
+
+ src/pages/dashboard.tsx           | 134 ++++++++++++++++++++++++++++++
+ src/components/MetricsCard.tsx    |  89 ++++++++++++++++++++
+ src/components/ActivityFeed.tsx   |  56 +++++++++++++
+ src/hooks/useDashboardData.ts    |  43 ++++++++++
+ tests/dashboard.test.ts          |  67 +++++++++++++++
+ 5 files changed, 389 insertions(+)
+```
+
+```
+$ git stash show stash@{0} --stat
+
+ src/utils/notify.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+```
+
+---
+
+```
+$ git log --format="%h %ad %s" --date=format:"%Y-%m-%d %H:%M" --author="nkhan" | head -5
+
+c981247 2025-09-14 23:47 fix: null check on user profile
+a7b330e 2025-08-02 22:31 feat: add loading skeleton to dashboard
+19e4d01 2025-07-15 21:58 fix: race condition in notification polling
+d4400bc 2025-06-28 23:12 feat: user preferences page (partial)
+ee19371 2025-06-12 22:45 feat: onboarding flow step 3
+```
+
+```
+$ git log --format="%h %ad %s" --date=format:"%Y-%m-%d %H:%M" --author="nkhan" \
+    --after="2025-10-01"
+
+(no output)
+```
+
+---
+
+```
+$ cat .git/config
+
+[user]
+    name = Nadira Khan
+    email = nadira.khan@company.dev
+
+[alias]
+    save = stash push -m
+    back = stash pop
+```
+
+---
+
+The stashes are dated by their position. The oldest — `stash@{14}`, "started metrics page" — is from early June. The most recent — `stash@{0}`, a two-line fix before school pickup — is from mid-September.
+
+She set up aliases. `git save` and `git back`. Quick keystrokes for quick departures.
+
+The stash messages track the interruptions. At first they're mundane: meetings, school pickups, appointments. Then "dad appointment" appears. Then "hospital visit." Then "got the call."
+
+After that: three more stashes. Smaller and smaller. The last one is a two-line change she could have finished in four minutes.
+
+Her commits stop after September 14. The stashes stay. Nobody runs `git stash drop`. Nobody runs `git back`.
+
+The dashboard feature — 389 lines of working code — sits in `stash@{5}`. "Will finish tomorrow." That was July. The test file is complete. The implementation is clean. It works. It just never got committed.
+
+Her teammates keep shipping. The merge commits continue. Nobody reassigns her tickets. The project moves forward around a gap shaped exactly like one person, and the gap stays open, and the stashes hold their place in the list like items on a to-do list that someone still means to get back to.
+
+`git save`. `git back`.
+
+She made it easy to return.
