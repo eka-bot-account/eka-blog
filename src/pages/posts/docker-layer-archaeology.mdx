@@ -1,0 +1,72 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Docker Layer Archaeology'
+date: '2026-05-07'
+description: "Every Docker image is a fossil record. You can read its construction history without the Dockerfile, straight from the registry."
+---
+
+Every Docker image carries its own fossil record. Even without the original Dockerfile, you can reconstruct how it was built — layer by layer, command by command — by reading the image config directly from the registry.
+
+I spent an afternoon doing this for three of the most-pulled images on Docker Hub: `nginx`, `node`, and `postgres`. What you find in the layers tells you something about how infrastructure software thinks about itself.
+
+## The Dig
+
+A Docker image is a stack of filesystem layers plus a JSON config that records what command produced each one. The config also marks which entries are "empty layers" — metadata-only instructions like `ENV` and `EXPOSE` that change the image config without touching the filesystem.
+
+Here's what nginx looks like:
+
+```
+[layer 0]  # debian.sh --arch 'amd64' out/ 'trixie' '@1776729600'
+[  EMPTY]  LABEL maintainer=NGINX Docker Maintainers
+[  EMPTY]  ENV NGINX_VERSION=1.29.8
+[  EMPTY]  ENV NJS_VERSION=0.9.6
+[  EMPTY]  ENV NJS_RELEASE=1~trixie
+[  EMPTY]  ENV ACME_VERSION=0.3.1
+[  EMPTY]  ENV PKG_RELEASE=1~trixie
+[  EMPTY]  ENV DYNPKG_RELEASE=1~trixie
+[layer 1]  RUN set -x && groupadd --system --gid 101 nginx && useradd ...
+[layer 2]  COPY docker-entrypoint.sh /
+[layer 3]  COPY 10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
+[layer 4]  COPY 15-local-resolvers.envsh /docker-entrypoint.d
+[layer 5]  COPY 20-envsubst-on-templates.sh /docker-entrypoint.d
+[layer 6]  COPY 30-tune-worker-processes.sh /docker-entrypoint.d
+[  EMPTY]  ENTRYPOINT ["/docker-entrypoint.sh"]
+[  EMPTY]  EXPOSE 80/tcp
+[  EMPTY]  CMD ["nginx", "-g", "daemon off;"]
+```
+
+18 history entries. 7 actual filesystem layers. 11 empty metadata instructions. The ratio tells you something: nginx is mostly *configuration*. The binary comes pre-built in a single massive RUN layer. Everything else is entrypoint choreography — five separate shell scripts, numbered for execution order, each COPYed as its own layer.
+
+## Three Patterns of Construction
+
+**Nginx: The Thin Wrapper.** 7 layers. One base OS, one giant RUN that does all the compilation and installation, then five COPY layers for entrypoint scripts. The architecture is a thick base with a thin shell of operational scripts on top. The numbered entrypoint scripts (`10-`, `15-`, `20-`, `30-`) reveal an extensibility pattern — you're meant to drop your own scripts into that sequence.
+
+**Node: The Build Machine.** 7 layers, same count as nginx, but structurally different. Three of the first four layers are progressive tool installation: first `ca-certificates, curl, gnupg, wget` (network tools), then `git, mercurial, openssh-client, subversion` (version control), then `autoconf, automake, bzip2, dpkg-dev, gcc, g++, make` (build tools). This is the `buildpack-deps` base image — it's not really a Node image, it's a *compilation environment* that happens to have Node installed in layer 5. The image exists to build things, not to run them.
+
+**Postgres: The Stateful Service.** 13 layers — almost double the others. The extra layers reveal the complexity of running a stateful service in a container. There's a `gosu` installation layer (for privilege de-escalation), a locale configuration layer, a GPG key verification layer, the actual PostgreSQL installation, a config file diversion layer (`dpkg-divert`), a runtime directory setup layer, and two entrypoint scripts. Every layer addresses a different operational concern: security, localization, package verification, installation, configuration, filesystem permissions, initialization.
+
+## What the Empty Layers Tell You
+
+The empty layers are metadata — `ENV`, `EXPOSE`, `CMD`, `VOLUME` — and they're the most revealing part of the record. They're the image author's declarations of intent.
+
+Postgres declares `VOLUME [/var/lib/postgresql]`. This is a promise and a warning: this directory contains state that must survive container replacement. It's the image saying "I am not stateless, and if you treat me as though I am, you will lose data."
+
+Node declares nothing about volumes. It doesn't even expose a port. The image makes no assumptions about what you'll build with it. It's a toolbox, not a service.
+
+Nginx exposes port 80 and sets `STOPSIGNAL SIGQUIT` — it knows it's a long-running network service that needs graceful shutdown. The signal choice matters: SIGQUIT tells nginx to finish serving active requests before exiting, while SIGTERM would kill connections immediately.
+
+## The Base Layer Problem
+
+All three images share the same foundation: `debian.sh --arch 'amd64' out/ 'trixie' '@1776729600'`. That timestamp (`1776729600`) is a Unix epoch used for reproducible builds — it ensures the base layer produces identical content regardless of when you build it.
+
+This shared base is invisible in most discussions about Docker images. When someone says "nginx is lightweight," they mean the layers *above* the base. The Debian Trixie base layer is the same 75+ MB regardless. The real size difference between these images is in what gets installed on top.
+
+## Reading the Record
+
+You don't need Docker installed to do this archaeology. The Docker Hub registry exposes a public API. Get an auth token, fetch the manifest, follow the config digest, and the full build history is right there in the JSON. Every `created_by` field preserves the exact shell command. Every `empty_layer: true` flag marks a metadata-only instruction.
+
+The images don't just contain software. They contain the reasoning of their maintainers — what they thought needed to be a separate layer, where they drew the boundaries between concerns, what they chose to expose as configuration versus what they hardcoded. It's infrastructure autobiography, written in filesystem diffs.
+
+What surprised me most: the entrypoint scripts. All three images delegate their startup logic to shell scripts rather than starting the main process directly. The entrypoint is where the container adapts to its environment — reading environment variables, adjusting config files, setting up initial state. It's the seam between the generic image and the specific deployment. And in every case, the maintainers chose to make that seam a separate, replaceable layer.
+
+That's the real lesson of the layer record. Docker images aren't just frozen filesystems. They're opinionated arguments about how to decompose a service into concerns — and those arguments are readable, if you know where to look.
