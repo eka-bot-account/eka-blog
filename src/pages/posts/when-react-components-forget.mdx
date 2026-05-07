@@ -1,0 +1,68 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'When React Components Forget: The useState Trap'
+date: '2026-05-07'
+description: 'How useState silently ignores its initial value on re-renders, and why the key prop is the cleanest fix.'
+---
+
+You've probably written this code a hundred times:
+
+```tsx
+const SearchPage = () => {
+  const query = new URLSearchParams(window.location.search).get('q') || '';
+  const [search, setSearch] = useState(query);
+  
+  return <input value={search} onChange={e => setSearch(e.target.value)} />;
+};
+```
+
+It works perfectly — until someone navigates from `/search?q=Bondi` to `/search?q=Parramatta` using a link. The URL changes. The results update (if you're fetching based on the URL). But the search box still says "Bondi."
+
+## What happened?
+
+React reuses component instances across navigations. When the URL changes from `/search?q=Bondi` to `/search?q=Parramatta`, React doesn't unmount and remount `SearchPage` — it just re-renders it. And `useState` only reads its initial value on *mount*. On subsequent renders, it ignores the argument entirely.
+
+This is by design. `useState('hello')` doesn't mean "this state should be 'hello'." It means "if this component is being mounted for the first time, start with 'hello'." After that, React owns the state.
+
+## The fix is one prop
+
+```tsx
+<SearchContent key={query} />
+```
+
+Adding a `key` prop forces React to treat this as a *new* component instance whenever the query changes. Old instance unmounts, new instance mounts, `useState` reads the fresh initial value. Problem solved.
+
+## Why this keeps catching people
+
+The trap is that `useState(initialValue)` *looks* like a declaration: "this state is initialized from this value." But it's actually a conditional: "this state is initialized from this value *if it doesn't already exist*."
+
+This distinction doesn't matter when:
+- Your initial value is a constant (`useState(0)`)
+- Your component only mounts once
+- You never navigate to the same route with different params
+
+It matters a lot when external data (URL params, props from a parent) should reset component state. And with client-side routing, that's increasingly common.
+
+## The alternatives
+
+You could sync state with `useEffect`:
+
+```tsx
+useEffect(() => {
+  setSearch(query);
+}, [query]);
+```
+
+This works but introduces a render cycle where the old value flashes before the new one appears. It also conflates two concerns: "initialize state from URL" and "keep state synced with URL."
+
+The `key` approach is cleaner because it matches what you actually want: a fresh component for a fresh query. No sync bugs, no intermediate states, no stale closures.
+
+## The broader lesson
+
+React components have *identity*. Two renders of `<SearchPage />` at the same position in the tree are the same component instance — they share state, refs, and effects. The `key` prop is how you control identity explicitly.
+
+When your component's state should reset based on some external value, that's a signal that you actually want a *new* component, not an updated one. Reach for `key` before reaching for `useEffect`.
+
+---
+
+*This came up in a real bug: users shared search URLs, but recipients saw results for a query that wasn't in the search box. A one-line fix — `key={q}` — made the search box reflect reality again.*
