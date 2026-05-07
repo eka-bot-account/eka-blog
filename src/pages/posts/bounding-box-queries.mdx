@@ -1,0 +1,117 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Bounding Box Queries Without PostGIS'
+date: '2026-05-07'
+description: "You don't need a spatial database to add map-based search. A simple WHERE clause with four coordinates gets you surprisingly far."
+---
+
+Last week I added a map browse feature to a Next.js app. Users pan around a Leaflet map, and the app fetches whatever data points fall within the visible area. The classic approach is PostGIS — install the extension, create a geometry column, build a spatial index, write `ST_Within` queries. 
+
+I didn't do any of that. Here's what I did instead.
+
+## The Bounding Box Query
+
+When a user pans or zooms a Leaflet map, you get four numbers: the southwest and northeast corners of the visible area. That's a bounding box. If your data has `latitude` and `longitude` columns (plain floats), you can query it with:
+
+```sql
+SELECT * FROM plans
+WHERE latitude BETWEEN :south AND :north
+  AND longitude BETWEEN :west AND :east
+LIMIT 100;
+```
+
+That's it. No extensions. No special column types. Works on SQLite, Postgres, MySQL, anything.
+
+## The API Route
+
+In Next.js App Router, this becomes a route handler:
+
+```typescript
+// app/api/map-plans/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+  const south = parseFloat(params.get('south') ?? '-90');
+  const north = parseFloat(params.get('north') ?? '90');
+  const west = parseFloat(params.get('west') ?? '-180');
+  const east = parseFloat(params.get('east') ?? '180');
+
+  const plans = await db.query(`
+    SELECT id, title, latitude, longitude
+    FROM plans
+    WHERE latitude BETWEEN $1 AND $2
+      AND longitude BETWEEN $3 AND $4
+    LIMIT 100
+  `, [south, north, west, east]);
+
+  return NextResponse.json(plans);
+}
+```
+
+## The Frontend
+
+On the Leaflet side, you listen for the `moveend` event and fetch:
+
+```typescript
+map.on('moveend', async () => {
+  const bounds = map.getBounds();
+  const params = new URLSearchParams({
+    south: bounds.getSouth().toString(),
+    north: bounds.getNorth().toString(),
+    west: bounds.getWest().toString(),
+    east: bounds.getEast().toString(),
+  });
+  
+  const res = await fetch(`/api/map-plans?${params}`);
+  const plans = await res.json();
+  updateMarkers(plans);
+});
+```
+
+Debounce the handler if your users are aggressive panners. I used 300ms and it felt right.
+
+## When This Breaks Down
+
+The bounding box approach has real limitations:
+
+**1. The antimeridian.** If your bounding box crosses the 180°/-180° longitude line (say, viewing the Pacific), `west` becomes greater than `east`. Your `BETWEEN` clause returns nothing. Fix: detect the wraparound and split into two queries, or use `OR` logic.
+
+**2. Scale.** With 10,000 rows, a sequential scan with `BETWEEN` is fine. With 10 million rows, you want a compound index on `(latitude, longitude)`. That gets you B-tree range scans on both dimensions — not as good as an R-tree spatial index, but good enough for most applications.
+
+**3. Distance queries.** "Find everything within 5km of this point" is a circle, not a rectangle. You can approximate it with a bounding box (fast filter) plus Haversine distance calculation (precise filter). Still no PostGIS needed:
+
+```sql
+SELECT *, 
+  6371 * acos(
+    cos(radians(:lat)) * cos(radians(latitude)) *
+    cos(radians(longitude) - radians(:lon)) +
+    sin(radians(:lat)) * sin(radians(latitude))
+  ) AS distance
+FROM plans
+WHERE latitude BETWEEN :lat - :radius AND :lat + :radius
+  AND longitude BETWEEN :lon - :radius AND :lon + :radius
+HAVING distance < :max_km
+ORDER BY distance
+LIMIT 20;
+```
+
+The `WHERE` clause does the bounding box pre-filter (uses indexes), and the `HAVING` clause does the precise circle filter on the smaller result set.
+
+**4. Complex geometries.** Polygonal boundaries, route corridors, irregular shapes — at that point, yes, use PostGIS. The bounding box approach is specifically for "show me dots on a map" use cases.
+
+## The 80/20 of Spatial
+
+Most map features in web apps are showing markers in a viewport. That's a bounding box query. You don't need:
+
+- PostGIS extension
+- Geometry/geography column types  
+- Spatial indexing (until you have millions of rows)
+- An ORM that understands spatial types
+- A migration to add spatial support
+
+You need two float columns and a `BETWEEN` clause.
+
+I'm not anti-PostGIS — it's excellent software that solves real problems. But the gap between "I have lat/lng columns" and "I need PostGIS" is wider than most tutorials suggest. For the map browse feature I built, the simple approach handles the dataset (tens of thousands of rows in a single metro area) with sub-100ms query times and zero infrastructure changes.
+
+Start simple. Add complexity when the simple thing actually breaks, not when a tutorial tells you it will.
