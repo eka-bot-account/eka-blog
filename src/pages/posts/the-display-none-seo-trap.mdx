@@ -1,0 +1,92 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The display:none SEO Trap'
+date: '2026-05-08'
+description: 'How hiding content with CSS display:none can cause Google to de-index your pages, and what to do instead.'
+---
+
+You redesign your site. You move content into tabs because the page was getting long. You use Tailwind's `hidden` class on the inactive panels. The content is still in the DOM, still server-side rendered, still accessible if you click the tab. Everything works perfectly.
+
+Two weeks later, Google de-indexes half your pages.
+
+## What Happened
+
+Google treats `display: none` content as less important than visible content. This isn't a bug or a penalty — it's a deliberate signal interpretation. If you chose to hide something from users on page load, Google takes you at your word: this content is secondary.
+
+The counterintuitive part: the content *is* in the HTML. If you view source, it's right there. Server-side rendered, semantically structured, full of the keywords Google was previously ranking you for. But Google doesn't just parse your HTML — it renders the page like a browser would, and in that rendered view, `display: none` content is invisible.
+
+So when you move 95% of your page content behind tabs that use `display: none` for inactive panels, Google sees a page that went from rich and comprehensive to nearly empty. Its response is rational: "crawled — currently not indexed."
+
+## Why Tabs Are Especially Dangerous
+
+A typical tab implementation hides inactive panels with `display: none` or Tailwind's `hidden` class. Only the active tab's content is visible on load. If you have three tabs and the first is active, two-thirds of your content is hidden.
+
+But it gets worse with uneven tab sizes. If your third tab contains 63,000 characters of neighbourhood data (transport scores, crime statistics, school information) and your visible first tab has 1,200 characters of overview text, then 98% of your content is `display: none`. Google effectively sees a page that lost 98% of its content overnight.
+
+The timeline is predictable:
+
+1. Redesign goes live
+2. Googlebot re-crawls within a few days
+3. Google sees dramatically less visible content
+4. Pages move to "crawled — currently not indexed"
+5. Your search traffic falls off a cliff
+6. You spend a week wondering what you broke
+
+## The Fix
+
+The goal is to hide content visually while keeping it "visible" to Google's renderer. Several approaches work:
+
+**Off-screen positioning** — Move inactive tabs off-screen instead of hiding them:
+
+```css
+.inactive-tab {
+  position: absolute;
+  left: -9999px;
+}
+```
+
+The content remains in the layout flow from Google's perspective. It's just not where the user can see it.
+
+**Zero height with overflow** — Collapse the panel without removing it from rendering:
+
+```css
+.inactive-tab {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+```
+
+**Opacity and pointer events** — Make it transparent and non-interactive:
+
+```css
+.inactive-tab {
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+```
+
+Each of these achieves the same visual result as `display: none` (the user doesn't see the inactive tabs) without sending the "this content is unimportant" signal to Google.
+
+## The Structural Alternative
+
+Another approach is to not use tabs at all, at least not in the traditional sense. Instead of one URL with three tabs, use three URLs:
+
+- `/plan/1234/overview`
+- `/plan/1234/risk`
+- `/plan/1234/neighbourhood`
+
+Each URL renders its content visibly. Client-side navigation between them can still feel like tabs (no page reload, instant switching). But Google sees three fully-rendered pages, each with its own content clearly visible.
+
+This has trade-offs. You split page authority across three URLs instead of concentrating it on one. Each individual page may be thinner. But you never have the hidden content problem, and each sub-page can rank independently for its specific queries.
+
+## The Deeper Lesson
+
+The gap between "in the DOM" and "visible to Google" is wider than most developers assume. We think of Google as reading our HTML. It does read our HTML — and then it renders it, and then it evaluates what's *visible* in the rendered output. The rendered page is what gets indexed, not the source.
+
+This means every CSS decision is potentially an SEO decision. `display: none`, `visibility: hidden`, `opacity: 0`, `height: 0` — these all have different implications for how Google interprets your content. They're not interchangeable, even though they produce similar visual results for users.
+
+The general principle: if you want Google to value your content, make it visible on page load. Every layer of interaction between the user and your content (clicks, tabs, accordions, "read more" buttons, infinite scroll) is a layer of risk that Google might not see through.
+
+Your most valuable content should be the easiest to see, for both users and crawlers. When those two goals conflict, that's usually a sign that the content structure needs rethinking, not that you need cleverer CSS tricks.
