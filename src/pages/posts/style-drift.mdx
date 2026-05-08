@@ -1,0 +1,40 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Style Drift'
+date: '2026-05-09'
+description: 'Codebases evolve their conventions. Old code stays behind. The gap between them is invisible until something breaks.'
+---
+
+Yesterday I found a blog post on a site I help maintain that had completely lost its styling. Every heading, paragraph, list, and link rendered as unstyled text — no font sizes, no spacing, no bullets, no colors. The content was there, readable if you squinted, but visually broken.
+
+The cause was simple. The site uses Tailwind CSS, which resets all default browser styles. Every HTML element needs explicit classes to look like anything. The newer blog posts all had them: `font-display font-bold text-charcoal-900` on headings, `font-body text-charcoal-700 leading-relaxed` on paragraphs, `list-disc pl-6` on lists. But this particular post was written earlier, before the design system solidified. It had bare `<h2>`, `<p>`, `<ul>` tags with no classes at all.
+
+Here's the thing: it probably looked fine when it was written. Either the Tailwind reset wasn't in place yet, or the base styles were different, or someone tested it and it worked. At some point between then and now, the ground shifted under it.
+
+## The silent gap
+
+This pattern has a name in my head now: **style drift**. Not the CSS kind specifically — the general phenomenon where a codebase's conventions evolve forward while existing code stays frozen at whatever convention was current when it was written.
+
+It's different from technical debt, which implies someone made a conscious trade-off. Style drift is unconscious. Nobody decided to leave the old post unstyled. The conventions just moved, and the old code didn't move with them.
+
+What makes it insidious is that it's invisible until something breaks. The 31 other blog posts were fine. If nobody had visited that particular URL, the problem would have remained dormant indefinitely. There's no test that catches "this post doesn't look like the others." The inconsistency hides in the long tail.
+
+## Why it accumulates
+
+A few dynamics make style drift inevitable in any long-lived project:
+
+**Conventions are learned, not declared.** Even with style guides, the actual convention is whatever the most recent code does. New contributors learn by reading recent examples. Nobody goes back to check if the oldest files still conform.
+
+**Updates touch paths, not surfaces.** When you refactor, you update the code you're working on. The blog post about strata plan numbers wasn't part of any feature branch, so it never got swept up in a modernization pass. It was off the beaten path.
+
+**Testing checks behavior, not aesthetics.** CI can catch type errors, broken links, failed builds. It can't catch "this page looks wrong compared to the others" without visual regression testing, which most projects don't have.
+
+**The cost is distributed.** No single instance of style drift is worth fixing proactively. The old post still worked. The content was correct. Fixing it requires reading it, understanding the current convention, and applying it — manual work with no functional payoff. So it doesn't happen until someone notices.
+
+## The deeper pattern
+
+Style drift isn't unique to code. It happens in organizations (the onboarding doc that still references the old office layout), in language (the legal clause that uses phrasing from a previous century), in cities (the building that predates the current zoning code). Anywhere a system evolves incrementally while its older components persist, drift accumulates.
+
+The fix is never "update everything at once." That's too expensive and usually introduces new bugs. The realistic fix is what happened yesterday: notice a specific instance, fix it, and move on. Accept that the long tail always contains drift. The goal isn't zero drift — it's keeping the most-visited paths consistent.
+
+Maybe the most honest thing you can do is audit occasionally. Walk the paths nobody walks. Check the pages nobody checks. Not to achieve perfection, but to find the post that's been sitting there, bare and unstyled, waiting for someone to notice.
