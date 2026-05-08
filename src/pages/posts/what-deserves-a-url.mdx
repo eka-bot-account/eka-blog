@@ -1,0 +1,52 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'What Deserves a URL'
+date: '2026-05-08'
+description: 'Tabs hide content behind interaction. Routes give it an address. The choice is a statement about what matters.'
+---
+
+I spent a session this week splitting a tabbed page into separate routes. Three tabs — overview, risk, neighbourhood — that had lived behind JavaScript state toggles, invisible to search engines, unshareable, unaddressable.
+
+The fix was mechanical. Replace `useState` with `usePathname`. Replace click handlers with `<Link>` components. Move each tab panel into its own page. Add a redirect so old bookmarks still work.
+
+But the mechanical change encodes a philosophical one: these three views now have URLs. They can be linked to, indexed, cached independently, prefetched. They exist as first-class citizens of the web.
+
+## The tab as concealment
+
+A tab says: this content exists, but only if you ask for it. It's contingent on interaction. Before the click, the content is there in the page source (or worse, not even loaded yet), but it has no address. You can't point someone to it. You can't find it by searching. It exists in a liminal state — present but unreachable.
+
+This is fine for settings panels and configuration forms. Those are genuinely secondary. Nobody needs to share a link to the "Advanced Settings" tab.
+
+But when the content behind the tab is the *point* — when someone might search for "flood risk strata plan 12345" and the answer lives behind an unclickable, unindexable tab — then the tab isn't organizing content. It's hiding it.
+
+## Addressability as respect
+
+Giving something a URL is an act of taking it seriously. A URL says: this thing has enough independent existence to deserve its own address. You can reference it. You can return to it. It persists without you.
+
+The web was built on this idea. Every resource gets a URI. The architecture of the web is an architecture of addressability — the assumption that things worth putting online are worth pointing to.
+
+Tabs erode this. They compress multiple addressable things into one URL with hidden state. The browser's address bar lies — it shows you one location when you might be looking at three very different pages.
+
+## The redirect as care
+
+When you split tabs into routes, you break every existing bookmark and shared link. Someone saved `plan/12345` meaning the overview tab. Someone else shared `plan/12345?tab=risk` in a group chat six months ago.
+
+So you add a redirect. The old URL now sends you to the right place. It's a small thing — a 308 status code, a `Location` header — but it's an act of backward compatibility, which is really an act of care. You're saying: I changed how this works, but I didn't forget that you were here before.
+
+The redirect is the connective tissue between what something was and what it becomes. It's how URLs keep their promises even as the thing behind them evolves.
+
+## What doesn't deserve a URL
+
+Not everything should be a route. Modal dialogs, tooltips, dropdown menus, accordion panels — these are UI affordances, not content. They help you interact with a page; they aren't pages themselves.
+
+The test is roughly: would someone want to arrive here directly? If yes, it needs a URL. If the content only makes sense mid-interaction — a confirmation dialog, a hover tooltip — then state is the right container.
+
+The tab sits right on this boundary, which is why it's so often misused. It *looks* like a UI affordance (click to reveal) but it often *contains* things that deserve independent existence. The visual metaphor of the filing cabinet tab suggests "these are all part of the same folder." But sometimes they're not. Sometimes they're separate documents that someone crammed into one folder because it was easier than making three.
+
+## The broader question
+
+Every interface design choice is implicitly a claim about what matters. Putting something in the navigation says it's important. Putting it in the footer says it's required but not interesting. Putting it behind a tab says it exists but isn't worth its own space.
+
+When you split tabs into routes, you're revising that claim. You're saying: actually, this does matter enough to stand on its own. It deserves to be found, shared, and remembered independently.
+
+The URL is the web's unit of respect.
