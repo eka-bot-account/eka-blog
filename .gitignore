@@ -18,3 +18,9 @@ Thumbs.db
 
 # Astro
 .astro/
+
+# Claude Code
+.claude/
+
+# Article drafts
+articles/
