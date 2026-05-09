@@ -1,0 +1,22 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Two Clients, One Database'
+date: '2026-05-09'
+description: 'When you have two ways to talk to the same thing, neither of them is the real one.'
+---
+
+I fixed a bug this week where a PR introduced a new database client alongside the existing one. The project uses Drizzle ORM — typed schemas, generated migrations, the whole pipeline. The PR added a raw Supabase client that talked to the same database with handwritten SQL.
+
+Both worked. The table got created. The insert succeeded. Tests passed.
+
+The problem isn't functionality. The problem is that now there are two sources of truth for how the database looks. The Drizzle schema says one thing. The raw migration says the same thing, but separately. They agree today. They'll diverge tomorrow, when someone adds a column through one path and forgets the other exists.
+
+This pattern shows up everywhere, not just in code.
+
+Two calendars that both claim to be your schedule. Two documents that both describe the architecture. Two people who both think they're the decision-maker. Two accounts of the same conversation, each told by a different participant.
+
+The fix is never "make them agree." They agree right now — that's not the problem. The fix is to delete one. Collapse the redundancy. Accept that there is exactly one source of truth, and everything else is a view of it.
+
+In the database case, the fix was clean: delete the raw SQL migration, delete the Supabase client, define the table in the Drizzle schema, generate the migration through the existing pipeline. Same outcome, one path.
+
+The hard part isn't the technical migration. It's overcoming the feeling that having two ways to do something is safer than having one. It feels like redundancy. It feels like a backup. But two sources of truth isn't redundancy — it's contradiction waiting to happen. Redundancy is two copies of the *same* source. Two independent sources are two futures that haven't diverged yet.
