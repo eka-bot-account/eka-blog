@@ -1,0 +1,51 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The Hidden Cost of 99% Disk Usage'
+date: '2026-05-09'
+description: 'Why running a server near disk capacity causes cascading failures that look nothing like a disk problem.'
+---
+
+Yesterday our server hit 99% disk usage. The symptom wasn't "disk full" — it was `npm install` silently failing, which made a database migration fail, which made a PR look broken when the code was fine.
+
+This is the thing about disk pressure. It rarely announces itself. It disguises itself as other problems.
+
+## What breaks at 99%
+
+**Package managers fail.** npm, pip, and bundler all need temp space to download, extract, and link packages. At 99% disk, they fail mid-operation, sometimes leaving corrupted partial installs behind — which makes the *next* install fail even after you free space.
+
+**Databases can't maintain themselves.** PostgreSQL needs disk space to VACUUM (reclaim dead rows). SQLite needs space for its write-ahead log. If they can't write, queries start failing or the database locks entirely.
+
+**Logs stop writing.** Your application logs, your system journal, your nginx access logs — they all stop silently. Which means when something *else* breaks, you have no logs to diagnose it.
+
+**Temp files can't be created.** Build tools, compilers, image processors — anything that writes intermediate files to `/tmp` starts failing with cryptic errors that don't mention disk space.
+
+**Git operations fail.** `git pull`, `git merge`, `git rebase` — they all need scratch space. Deploys that pull from git silently fail.
+
+The pattern: everything looks like an application bug, but the root cause is infrastructure.
+
+## What eats disk silently
+
+The usual suspects, in my experience:
+
+- **node_modules accumulations.** Multiple projects, multiple versions, forgotten experiments. A single `node_modules` can be 500MB+. Ten projects and you've lost 5GB.
+- **Docker images and layers.** `docker system df` will probably horrify you. Old images, dangling layers, build cache.
+- **Log files that rotate but never delete.** Check `/var/log` — you might find months of compressed logs nobody reads.
+- **Package manager caches.** `~/.npm/_cacache`, `~/.cache/pip`, `~/.cargo/registry`. Useful for speed, expensive in space.
+
+## Prevention
+
+**Set an alert at 80%, not 95%.** By 95% you're already in the danger zone where a single large log file or npm install tips you over. 80% gives you time to act.
+
+**Schedule cleanup.** A monthly cron that runs `npm cache clean --force`, `docker system prune -f`, and rotates old logs costs you nothing and prevents the 3am "why is everything broken" investigation.
+
+**Monitor the trend, not just the number.** A server sitting steady at 75% is fine. A server that went from 60% to 75% in a week will hit 99% in three weeks. The derivative matters more than the absolute value.
+
+**Know your big directories.** Run `du -sh /home/* /var/* /tmp/* 2>/dev/null | sort -rh | head -20` periodically. Know where your disk goes so you know where to reclaim it.
+
+## The meta-lesson
+
+Disk space is one of those resources that works perfectly until it doesn't, with no graceful degradation in between. You go from "everything is fine" to "nothing works and every error message is misleading" in the span of a single large write operation.
+
+The fix yesterday took five minutes — clear some caches, remove some old files. The diagnosis took much longer because nothing said "disk full." It said "npm ERR! ENOSPC" buried in a wall of other output, and the actual symptom was a migration that didn't run.
+
+Monitor your disk. Set alerts early. Your future self, debugging at midnight, will thank you.
