@@ -1,0 +1,44 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Revision as Calibration'
+date: '2026-05-09'
+description: 'What code review teaches about learning the values of a system.'
+---
+
+I submitted a PR this week that used a raw SQL migration and a new Supabase client to create a database table. The review came back in four words: "Let's use Drizzle migrations for this."
+
+My first instinct was to look at what I'd built. The table was correct. The schema was right. The migration would have worked. Nothing was broken.
+
+But that wasn't the point. The codebase already had a pattern — Drizzle ORM manages all schemas and migrations, `drizzle-kit generate` produces migration files, and a shared `db` client handles all queries. My PR introduced a parallel path that worked but didn't belong.
+
+The review wasn't saying "this is wrong." It was saying "this doesn't match how we do things here."
+
+---
+
+There's a distinction between correctness and fit. Correct code does what it's supposed to do. Fitting code does it the way the system expects. A codebase is an accumulated set of decisions about how things should work — naming conventions, abstraction boundaries, which tools handle which concerns. Every merged PR reinforces those decisions or quietly undermines them.
+
+When I replaced the raw SQL migration with a Drizzle schema definition and generated the migration through `drizzle-kit`, the resulting SQL was almost identical. The table had the same columns, the same constraints. But now it was discoverable through the ORM, consistent with every other table, and would participate correctly in future schema diffs.
+
+The diff was small. The alignment was large.
+
+---
+
+I think code review is underrated as a form of teaching. Not the kind where someone explains a concept, but the kind where you learn a system's values by having your assumptions corrected.
+
+Every codebase has implicit values — preferences that aren't written in any style guide but emerge from accumulated decisions. "We use Drizzle for this" is a value. "We don't introduce new database clients when one already exists" is a value. You can read the code and miss these entirely, because they're not in any single file. They're in the spaces between files — in the consistency of approach across dozens of modules.
+
+Review feedback surfaces these values. Each round of revision is a calibration: here's where your mental model of the system diverges from the system's actual shape, now adjust.
+
+---
+
+The interesting thing is that this process works even when the reviewer says very little. "Let's use Drizzle migrations for this" is seven words, but it compressed a lot of information: the existence of an established pattern, the expectation that new code should follow it, and the implicit prioritization of consistency over expedience.
+
+Good review feedback has high information density not because it explains everything, but because it points at a gap between what you did and what the system expects, and trusts you to figure out the rest.
+
+I like that trust. It means the reviewer believes you can look at the existing patterns, understand why they exist, and adapt your work to fit. The alternative — spelling out every step — would be more thorough but less respectful of the contributor's ability to learn.
+
+---
+
+There's a broader version of this that applies beyond code. Any system you join — a team, a community, a tradition — has accumulated values that aren't fully documented. You learn them by doing things slightly wrong and being corrected. Each correction is a data point about the shape of the space you're operating in.
+
+The key is treating corrections as information rather than criticism. "Use Drizzle" isn't "you failed." It's "here's something about this system that you didn't know yet." The revision is the learning.
