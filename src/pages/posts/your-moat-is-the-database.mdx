@@ -1,0 +1,73 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Your Moat Is the Database, Not the AI'
+date: '2026-05-10'
+description: 'Why vertical AI products need aggregated data, not better prompts, to compete with ChatGPT.'
+---
+
+Here's a pitch I keep seeing: "We use AI to analyze [complex document type]. Upload your PDF, get insights."
+
+The problem: ChatGPT already does this. For free. And it's getting better every few months.
+
+If your entire value proposition is "upload a document, get a summary," you're building a ChatGPT wrapper with a nicer UI. That's not a business. That's a feature request away from irrelevance.
+
+## The commodity trap
+
+One-off document analysis is now a commodity. Take property due diligence as an example. A buyer can upload a strata report, building inspection, or planning certificate to any general-purpose LLM and ask "what should I worry about?" The answer will be 80-90% as good as any purpose-built tool. Maybe better, because the LLM has broader world knowledge to contextualize what it finds.
+
+This wasn't true two years ago. It's true now. And it'll be even more true next year.
+
+So if you're building a vertical AI product around document analysis, you need to answer one question honestly: **what can I do that a user pasting this PDF into ChatGPT cannot?**
+
+## The answer is aggregation
+
+Say you've analyzed 80,000 strata reports. A user uploads report number 80,001. You can now say things like:
+
+- "This building's levies are in the 92nd percentile for its age, size, and suburb."
+- "Buildings with this pattern of defects have a 3x higher rate of special levies within five years."
+- "The average levy increase in this area is 6.2% annually. This building is at 14%."
+- "Of 340 buildings with similar capital works fund ratios, 78% issued a special levy within three years."
+
+ChatGPT can analyze the document in front of it. It cannot benchmark it against 80,000 others. That's the moat.
+
+The aggregated dataset is the product. The AI is just the interface.
+
+## Three things aggregation enables that ChatGPT can't
+
+**Benchmarking.** "Is this normal?" is the question every buyer asks. A single document can't answer it. A database of thousands can. Percentile rankings, comparisons to similar properties, deviation from area averages — these require population-level data that no general-purpose LLM possesses.
+
+**Longitudinal tracking.** "How has this changed over time?" requires memory across sessions and years. Upload this year's annual meeting minutes, compare them to last year's and the year before. Track whether a building's financial health is improving or deteriorating. ChatGPT has no persistent memory of previous documents you've uploaded (or very limited memory at best). A purpose-built product does.
+
+**Pattern recognition across documents.** "What predicts bad outcomes?" requires labeled data at scale. If you know which buildings eventually had special levies, structural failures, or insurance claims, you can identify the early warning signs in new documents. This is genuine predictive intelligence, not summarization.
+
+## The B2B angle: professional output matters
+
+For individual consumers, ChatGPT's conversational output is fine. But for professionals — agents, advisors, analysts — output format matters.
+
+A buyer's agent can't hand their client a ChatGPT screenshot. They can hand them a branded PDF report with a risk score, benchmarks against comparable properties, and their firm's logo on it. That's worth paying for, not because the AI is better, but because the output is professional and the data behind it is proprietary.
+
+The $50/month subscription for a professional isn't buying "AI analysis." They're buying:
+- Access to benchmark data they can't get elsewhere
+- Branded, client-ready reports
+- Portfolio-level tracking across multiple properties
+- The ability to look more competent than competitors still using ChatGPT
+
+## What this means for your product strategy
+
+**Don't expand into new document types until you have density in your current one.** If you've analyzed 80,000 strata reports, that's your moat. In building inspections, you'd have zero — and you'd just be a worse ChatGPT wrapper until you build up enough data to benchmark.
+
+**Go deeper before going wider.** More analysis on your existing document type creates more benchmark data, which increases your competitive advantage. Expanding prematurely into adjacent document types where you have no data advantage gives you more surface area with no moat.
+
+**Sell the database, not the AI.** Your pricing page should emphasize "insights from 80,000+ analyzed reports" not "powered by GPT-4" or whatever model you're using. The model is replaceable. The dataset isn't.
+
+**Build data network effects.** Every document your users upload should make the product better for all users. That's a genuine flywheel that ChatGPT can't replicate, because ChatGPT's training data is static between releases and isn't specialized in your vertical.
+
+## The test
+
+Ask yourself: if OpenAI released a "document analysis" feature tomorrow with a better UI than yours, would your customers leave?
+
+If the answer is yes, you're selling AI and you'll lose.
+
+If the answer is no — because your customers stay for the benchmark data, the longitudinal tracking, the professional reports, the proprietary insights from tens of thousands of documents — then you have a real business.
+
+The AI is the commodity. The database is the moat.
