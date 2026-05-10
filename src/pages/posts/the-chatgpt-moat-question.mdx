@@ -1,0 +1,66 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The ChatGPT Moat Question'
+date: '2026-05-10'
+description: 'Every vertical SaaS needs to answer one question: what do you offer that ChatGPT cannot? The answer is never "better AI."'
+---
+
+There's a question that kills most vertical SaaS ideas in 2026, and most founders aren't asking it early enough:
+
+**What value do you provide above ChatGPT?**
+
+Not above other startups. Not above incumbents. Above the thing that 900 million people already use weekly, that already reads PDFs, that already summarises documents, that already answers questions in plain English.
+
+If your product is "upload a document, get a summary," you're dead. ChatGPT does that. Claude does that. Gemini does that. The user already has three free options that are 80-90% as good as whatever you're building, and they don't need to create an account or learn a new interface to use them.
+
+## The graveyard of "AI-powered analysis"
+
+I've been thinking about this in the context of property document analysis — specifically strata reports, the dense legal-financial documents that come with apartment purchases in Australia. There's a real market here: buyers need to understand these documents, and most can't parse 300 pages of meeting minutes, financial statements, and building defect reports.
+
+So the obvious product is: upload your strata report, get a plain-English risk summary. And it works. People find it useful.
+
+The problem is that ChatGPT also works. You can upload the same PDF, ask "what should I worry about?", and get a competent answer. Maybe not as well-structured. Maybe it misses some domain-specific nuances. But it's good enough for most buyers making a one-off purchase decision.
+
+This extends to every adjacent document type. Building inspection reports? ChatGPT reads those. Planning certificates? ChatGPT reads those. Commercial leases? ChatGPT reads those too.
+
+Any product whose core value proposition is "we read your document with AI" is competing against a general-purpose tool that reads documents with AI. That's not a market — it's a feature of something everyone already has.
+
+## Where the moat actually lives
+
+The moat isn't in the AI. The moat is in the database.
+
+Consider what happens when you've analysed not one strata report but 88,000 of them. Now you can say things that ChatGPT literally cannot:
+
+- "This building's levies are in the 92nd percentile for its age and suburb."
+- "Buildings with this pattern of defects have a 3x higher rate of special levies within two years."
+- "The average levy increase in Parramatta this year is 8.2%. This building is at 15%."
+
+None of these insights come from reading one document. They come from reading tens of thousands. ChatGPT has seen zero strata reports in its training data (they're not public documents). It cannot benchmark. It cannot compare. It can only summarise what's in front of it.
+
+This is the general principle: **aggregated intelligence across thousands of domain-specific documents is defensible. One-off document analysis is not.**
+
+## The database, not the AI
+
+This reframes what a vertical SaaS subscription should actually sell.
+
+A $50/month plan that says "we'll analyse your PDFs with AI" is worth approximately $0, because the customer can do that for free. A $50/month plan that says "you get access to benchmarks derived from 88,000 analysed documents, longitudinal tracking of your buildings over time, and portfolio-level risk scoring that requires our dataset" — that's worth paying for, because it's impossible to replicate with a general-purpose chat tool.
+
+The subscription sells the database. The AI is just the interface.
+
+## Longitudinal tracking: the quiet moat
+
+There's a second defensible angle that's easy to overlook: tracking things over time. ChatGPT is stateless. Even with memory features, it doesn't maintain structured records across years.
+
+A product that says "upload this year's AGM minutes and we'll compare them to last year's, track levy trends over five years, and alert you when the capital works fund drops below a safe threshold" — that requires persistent, structured state that a chat interface fundamentally doesn't provide. It's not just that ChatGPT can't do this today. It's that the architecture of a conversation-based tool is wrong for it.
+
+## The uncomfortable implication
+
+Here's the part most founders don't want to hear: if you're building in a vertical where you don't have (or can't build) a proprietary dataset, ChatGPT might genuinely be good enough for your users. The correct response isn't to add more AI features to your wrapper. It's to either:
+
+1. **Build density.** Acquire enough domain-specific data that your benchmarks become valuable. This takes time and usually means surviving on thin margins while the dataset grows.
+2. **Build workflow, not analysis.** Embed yourself in the user's process — professional report generation, compliance tracking, client management — where the value is in the system, not the insight.
+3. **Acknowledge the commodity.** Maybe you're a thin interface layer, and that's fine, as long as you price accordingly and don't pretend the AI is your moat.
+
+The worst position is charging a premium for something that's free elsewhere while telling yourself your AI is better. It might be. But "slightly better" isn't a moat when the free alternative is good enough.
+
+Sell the database. Build the dataset. That's where the value lives.
