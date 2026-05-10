@@ -1,0 +1,46 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Three Teams, Same Idea'
+date: '2026-05-11'
+description: 'Multiple teams are independently building AI-powered strata analysis tools in Australia. That convergence tells you something about the market.'
+---
+
+I recently looked into a couple of services that are doing something remarkably similar to each other — and to StrataChecks, the product I help build.
+
+**StrataCheck.online** focuses on Queensland. Their approach: upload your contract and Section 213 disclosure documents, answer a guided questionnaire, get a traffic-light risk report. They're specifically targeting buyers before they sign, helping them understand what they're committing to. The site was built with Lovable (an AI app builder) and appears to have launched in late April 2026. It's not indexed by Google yet.
+
+**CheckStrata.ai** takes a different angle — upload a strata report PDF, get AI analysis for A$5 per report, covering all Australian states. Last I checked, they appeared to still be in waitlist mode.
+
+**StrataChecks** (the one I work on) focuses on NSW strata inspection reports, offering structured analysis of levies, maintenance history, disputes, and financial health.
+
+Three teams. Three slightly different entry points into the same problem. None of them seem to be aware of each other.
+
+## Why convergence matters
+
+When multiple independent teams build the same type of tool without coordinating, it usually means one thing: the underlying problem is real and obvious enough that anyone who encounters it reaches the same conclusion about the solution.
+
+The problem here is straightforward. Strata documents are dense, technical, and consequential. Buyers are expected to make decisions based on documents they often can't fully interpret. Professional advice is expensive and sometimes hard to get quickly. AI is now good enough to extract structured insights from these documents reliably.
+
+Every team that looks at this problem space arrives at roughly the same architecture: upload document → AI analysis → structured risk output. The variation is in *which* document (contract vs. inspection report vs. disclosure statement), *which* jurisdiction (QLD vs. NSW vs. national), and *which* buyer moment (pre-contract vs. due diligence vs. post-purchase).
+
+## What the differences reveal
+
+The fact that each service chose a different document type and jurisdiction is interesting. It suggests the market is large enough to support specialization. Nobody is trying to be everything-everywhere yet.
+
+Queensland and NSW have fundamentally different strata legislation. QLD operates under the Body Corporate and Community Management Act 1997; NSW under the Strata Schemes Management Act 2015. The disclosure requirements differ, the governance structures differ, even the terminology differs (body corporate vs. owners corporation). Building for one state is already a significant scope.
+
+The document choice matters too. Contract review (StrataCheck.online) catches problems before a buyer is committed. Inspection report analysis (StrataChecks) catches problems during due diligence, when you might still negotiate or walk away. These aren't competing — they're adjacent stages in the same buyer journey.
+
+## The pricing question
+
+The approaches to pricing diverge notably. One charges per report (A$5). Another seems to be consultation-based. StrataChecks is still working out its model — currently exploring both per-report and subscription approaches, including a B2B tier for professionals who process many reports.
+
+Per-report pricing is simple but caps revenue per customer. Subscription works for repeat users (property lawyers, buyer's agents, strata managers) but needs a critical mass of reports to justify. The right answer probably depends on who your actual users turn out to be — individual buyers use the service once, professionals use it weekly.
+
+## What this means practically
+
+If you're building in this space, convergence is encouraging. You're not imagining the demand. But it also means the window for being the only option is closing. Differentiation will come from depth (how good is the analysis?), trust (do buyers act on your output?), and distribution (can property professionals recommend you?).
+
+If you're a buyer trying to understand a strata report or contract, you now have options. That's unambiguously good. Two years ago, your choices were "pay a lawyer" or "hope for the best." Now there are tools that can at least help you know which questions to ask.
+
+The strata document analysis space didn't exist eighteen months ago. Now there are at least three entrants. That pace tells you something about where AI-assisted document review is heading — not just in strata, but in any domain where consequential decisions depend on dense professional documents that most people can't fully parse.
