@@ -1,0 +1,81 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'How One Slow Query Kills Your Whole App'
+date: '2026-05-17'
+description: "Connection pool exhaustion is a cascade failure. A single slow query doesn't just slow one request — it consumes a connection, starving every other query until the whole application times out."
+---
+
+Here's a failure mode that doesn't get enough attention: your database has plenty of capacity, your queries are correct, your indexes are fine for 99% of traffic — but one slow query pattern under load brings everything down.
+
+Not because the database crashes. Because every other query is waiting in line for a connection that never comes back.
+
+## The Cascade
+
+Connection pools exist because opening a new database connection is expensive. Your app maintains a pool of, say, 20 connections. When a request needs the database, it borrows a connection, runs the query, and returns it.
+
+The failure starts when a query takes too long:
+
+1. A search query hits an unindexed `ILIKE '%sydney%'` on 500k rows. Takes 270ms instead of 5ms.
+2. Under load, 20 of these arrive before the first one finishes. Now all 20 pool connections are occupied.
+3. The 21st request — maybe a simple `SELECT * FROM plans WHERE id = 123` that would take 2ms — waits for a free connection.
+4. It waits. And waits. Then times out.
+5. Every subsequent request, regardless of how fast its actual query would be, also times out.
+
+The slow query didn't just slow itself down. It consumed a shared resource (the connection) for longer than expected, starving unrelated queries. This is the cascade.
+
+## What the Metrics Look Like
+
+From the outside, this looks like the database is down. You see:
+
+- Thousands of timeout errors across all endpoints
+- No single query type dominating — everything fails
+- Database CPU and memory look normal (it's not overloaded, it's under-utilized because connections are held idle waiting for slow results)
+- The pool utilization metric (if you have one) is pegged at 100%
+
+The misleading part: the database itself is fine. The bottleneck is the pool, not the engine.
+
+## Why It's Not Obvious
+
+If you only look at average query times, you miss this entirely. The average across all queries might be 15ms — perfectly healthy. But the P99 for one specific pattern is 300ms, and that pattern gets hit enough during peak traffic to saturate the pool.
+
+You need to look at:
+- **Pool wait time** — how long requests wait for a free connection (this is the leading indicator)
+- **Slow query log** — which specific queries hold connections longest
+- **Concurrent connection count** — not just "how many total" but "how many at the same instant"
+
+## The Fix Isn't Always What You Expect
+
+The obvious fix is "make the slow query fast" — add an index, rewrite the query. And yes, that works. In our case, adding trigram indexes dropped the search query from 270ms to under 10ms, and the timeouts disappeared.
+
+But sometimes the better fix is to not run the query at all:
+
+- **Precompute** — if you're aggregating data that changes once a day, materialize it. Don't recalculate on every page load.
+- **Remove the feature** — if a feature causes production incidents and users don't need it urgently, hide it. Ship the fix later when it's ready, not under pressure.
+- **Circuit break** — if the database is slow, fail fast instead of queuing up. Return a degraded response rather than timing out and consuming a connection for 30 seconds.
+
+We ended up doing all three. The materialized view eliminated expensive aggregation queries. The UI feature that triggered them got hidden temporarily. And a circuit breaker pattern prevents cascade failures if it happens again.
+
+## The Deeper Pattern
+
+Connection pool exhaustion is an instance of a general pattern: **shared resource starvation under asymmetric load**. The same dynamic happens with:
+
+- Thread pools in web servers (one slow handler blocks all threads)
+- Rate limits with retry storms (one user's retries consume everyone's quota)
+- Disk I/O on shared storage (one large sequential write starves random reads)
+- Even human teams (one urgent escalation consuming everyone's attention)
+
+The fix is always structural: either make the slow thing fast, isolate it from the shared resource, or shed the load before it accumulates.
+
+What makes pool exhaustion particularly nasty is the mismatch between cause and symptom. The slow query affects one endpoint. The timeout errors affect everything. If you're not looking at the pool itself, you'll chase ghosts across your entire application trying to figure out why unrelated features suddenly broke.
+
+## Practical Checklist
+
+If you're running a connection-pooled database application:
+
+1. **Monitor pool utilization**, not just query times. If your pool hits 80%+ sustained, you're one traffic spike from cascade failure.
+2. **Set query timeouts** aggressively. A query that takes 5 seconds is almost never better than a failed request — it's just holding a connection hostage.
+3. **Identify your slowest queries under load**, not just your slowest queries in isolation. A 50ms query that gets called 1000x concurrently is worse than a 500ms query called once.
+4. **Separate read pools from write pools** if possible. A slow analytics query shouldn't be able to block user signups.
+5. **Have a "remove the feature" option ready**. Sometimes the fastest fix is `display: none` while you work on the real solution.
+
+The goal isn't to prevent slow queries — that's impossible. The goal is to prevent one slow query from becoming everyone's problem.
