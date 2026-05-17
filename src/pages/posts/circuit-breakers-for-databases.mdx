@@ -1,0 +1,85 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Circuit Breakers for Database Connections'
+date: '2026-05-17'
+description: 'When your database is slow, retrying makes it slower. Circuit breakers stop the cascade before your whole app goes down.'
+---
+
+Your database is slow. Every request waits longer. The connection pool fills up. New requests queue behind the stuck ones. Within seconds, your entire application is unresponsive — not because the database is down, but because it's *slow*.
+
+This is worse than a crash. A crashed database returns errors immediately. A slow database holds connections hostage.
+
+## The cascade
+
+Here's what happens step by step:
+
+1. A query that normally takes 5ms starts taking 2 seconds (bad query plan, lock contention, disk pressure — doesn't matter why)
+2. Each slow query holds a connection from the pool for 2 seconds instead of 5ms
+3. Your pool has, say, 20 connections. At 2 seconds per query, you can only serve 10 requests per second instead of 4,000
+4. Incoming requests exceed 10/second, so they start queuing for a connection
+5. The queue grows. Request latency goes from 2 seconds to 10, then 30, then timeout
+6. Upstream load balancers and clients start retrying their timed-out requests
+7. The retry storm doubles the load. Now nothing gets through
+
+The problem isn't the original slow query. It's that every other healthy query gets trapped behind it in the connection pool queue.
+
+## What a circuit breaker does
+
+The circuit breaker pattern, borrowed from electrical engineering, has three states:
+
+**Closed** (normal operation): Requests flow through normally. The breaker monitors for failures.
+
+**Open** (tripped): Too many failures detected. The breaker *immediately rejects* new requests without trying the database. This is the key insight — fast failure is better than slow failure.
+
+**Half-open** (testing recovery): After a cooldown period, the breaker lets a single request through to test if the database has recovered. If it succeeds, back to Closed. If it fails, back to Open.
+
+## Why fast failure matters
+
+When the breaker trips open, your application starts returning errors in 1ms instead of hanging for 30 seconds. That sounds worse — errors! — but it's dramatically better:
+
+- **Connection pool stays healthy.** Connections aren't held by doomed requests.
+- **Healthy queries still work.** If only one type of query is slow, you can circuit-break just that path while the rest of your app keeps serving.
+- **Retry storms die.** Clients get fast 503s and back off, instead of timing out and retrying into a growing queue.
+- **Recovery is faster.** When the database catches up, the half-open probe detects it and traffic resumes. Without a breaker, the backed-up queue means recovery takes minutes even after the database is fine.
+
+## What to monitor
+
+The circuit breaker needs to decide when to trip. Common signals:
+
+- **Timeout rate**: If more than 50% of queries in the last 10 seconds timed out, trip
+- **Connection pool saturation**: If the pool has been at capacity for more than 5 seconds, trip
+- **Response time percentiles**: If p95 latency exceeds 5x the normal baseline, trip
+
+Don't trip on a single failure. Databases have brief hiccups all the time. You want a sliding window that catches sustained degradation.
+
+## The simpler version
+
+A full three-state circuit breaker can be overkill. Sometimes all you need is a **queue depth limit** on your connection pool:
+
+```
+Pool size: 20 connections
+Max queue: 10 waiting requests
+```
+
+Request number 31 gets an immediate error instead of joining the back of a growing queue. This isn't a circuit breaker in the formal sense, but it achieves the same goal: fast failure prevents cascade.
+
+This is what we implemented in production when we hit connection pool exhaustion from slow aggregation queries. The queue limit meant that even when one query type was slow, the pool couldn't be fully consumed — other queries still had connections available.
+
+## The hierarchy of fixes
+
+Circuit breakers are a safety net, not a solution. The fix priority should be:
+
+1. **Fix the slow query** — add indexes, rewrite the query, use a materialized view
+2. **Remove the feature** — if the query isn't essential, don't run it (we did this too — [removed the feature entirely](/posts/connection-pool-exhaustion) while working on the fix)
+3. **Add a circuit breaker** — protect the rest of the system from the slow path
+4. **Increase pool size** — this just delays the cascade; it doesn't prevent it
+
+We ended up doing all four, in roughly that order. The circuit breaker stays in place even after the query is fixed, because the next slow query is always coming.
+
+## The counterintuitive part
+
+Circuit breakers make your application *less reliable* in a narrow sense — they return errors when the database is merely slow, not down. Without a breaker, that request might have eventually succeeded after a long wait.
+
+But they make your *system* more reliable. One degraded component doesn't take down everything else. The errors are fast, clear, and recoverable. The alternative — everything hangs until everything times out — is worse in every way that matters.
+
+The instinct is to keep trying. The circuit breaker says: stop trying, fail fast, check back later. It feels wrong, and it works.
