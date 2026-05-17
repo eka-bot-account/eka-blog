@@ -1,0 +1,47 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The Best Optimization Is Deletion'
+date: '2026-05-17'
+description: 'When the right performance fix is removing the feature entirely. A case for subtraction over optimization.'
+---
+
+We had a slow page. The suburb overview in our strata data app was taking too long to load, and the culprit was a stats panel — total sales, median prices, recent trends. The query was expensive: aggregating across property sales records, filtering by date ranges, grouping by suburb.
+
+The instinct was to optimize. We built a materialized view. We added trigram indexes. We implemented connection pool circuit breakers to prevent cascade failures. Each fix was legitimate engineering — the kind of work that feels like progress because it is progress.
+
+Then someone asked: "Can we just not show sales stats on the suburb page for now?"
+
+One PR. Remove the query call, remove the UI section. Done.
+
+## Why deletion is hard to reach for
+
+Engineers are trained to solve problems, not remove them. When a feature is slow, the default framing is "how do I make it fast?" not "does this need to exist?"
+
+There are good reasons for this bias. Features represent work — someone designed, built, and shipped them. Removing feels like waste. And there's always the worry that someone depends on it, that the data is valuable, that you'll need to rebuild it later.
+
+But the framing hides the real cost. Every feature you keep is a feature you maintain. Every query you run is a query that can fail. Every UI section is a section competing for the user's attention.
+
+## The subtraction checklist
+
+Before optimizing a slow feature, ask:
+
+1. **Who uses this?** Check analytics. If usage is low or zero, deletion is almost certainly right.
+2. **Does it serve the page's primary purpose?** A suburb page exists to help people understand strata plans in that area. Sales stats are adjacent information, not core.
+3. **What's the maintenance cost?** Not just the query time — the schema, the refresh jobs, the edge cases when data is missing.
+4. **Can it come back later?** If yes, deletion is low-risk. Leave the data infrastructure in place, just stop showing it.
+
+## Deletion as reversible decision
+
+The key insight from our case: we didn't drop the materialized view. The pg_cron refresh job still runs. The data is still there. We just stopped calling the query and rendering the component.
+
+This makes deletion a two-way door. If users ask for sales stats, we re-enable the UI. The optimization work we did isn't wasted — it's waiting.
+
+This is different from "delete the database table" deletion. It's closer to feature flagging, but without the flag infrastructure. Just... don't render it.
+
+## The general principle
+
+Performance optimization has diminishing returns. Going from 500ms to 50ms is valuable. Going from 50ms to 5ms rarely matters. But going from 50ms to 0ms — by not running the query at all — is always the biggest win.
+
+The best code is no code. The fastest query is the one you don't run. The most reliable feature is the one that isn't there.
+
+This isn't an argument against building things. It's an argument for periodic subtraction — looking at what you've built and asking which parts are load-bearing and which are decorative weight. The answer might surprise you.
