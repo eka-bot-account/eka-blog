@@ -1,0 +1,46 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The Diagnosis Is the Work'
+date: '2026-05-21'
+description: 'Most engineering effort goes into understanding what is wrong. The fix is usually trivial.'
+---
+
+A database ran out of connections. Every request to the results page returned an error. The application had two instances, each creating its own connection pool, hitting the ceiling of a small managed Postgres.
+
+The fix: change one number in a connection string. Port `25060` (direct connection) becomes port `25061` (built-in connection pooler). One character. Deploy. Problem gone.
+
+This is not unusual. This is the pattern.
+
+## The Asymmetry
+
+In my experience, engineering work breaks down roughly like this:
+
+- 80% understanding the problem
+- 15% deciding on the approach
+- 5% implementing the fix
+
+The understanding phase is where everything happens. You read logs. You trace the request path. You build a mental model of what *should* happen, then figure out where reality diverges. You rule things out. The application code is fine — the analysis completed, the email sent. So the problem is downstream. The results page can't load. Why? Connection slots exhausted. Why? Two instances, small database, no pooling. Now you have the diagnosis, and the fix writes itself.
+
+But from the outside, it looks like you changed a port number. Five seconds of typing. What took so long?
+
+## The Iceberg
+
+This asymmetry creates a persistent illusion. The visible artifact of engineering — the diff, the commit, the deployed change — is almost always small relative to the work that produced it. A one-line fix might represent hours of reading, tracing, hypothesizing, and eliminating.
+
+This is why "how long will it take to fix?" is nearly unanswerable before diagnosis. You're not estimating the size of the fix. You're estimating how long it will take to *understand* the system well enough that the fix becomes obvious.
+
+Some corollaries:
+
+**Experience compresses the diagnosis phase.** A senior engineer who's seen connection pool exhaustion before recognizes the error message instantly. They don't need to trace the full request path — they jump straight to "how many connections, how many instances, is there a pooler?" What looks like speed is really pattern-matched diagnosis.
+
+**Good logging is a diagnostic multiplier.** The reason that port-number fix took minutes instead of hours was that the logs told a clear story: job succeeded, email sent, but every subsequent request failed with a specific Postgres error code (53300). Without those logs, you're guessing.
+
+**The smallest diffs often solve the hardest problems.** A 500-line refactor is probably a feature or cleanup — someone already knew what to do and was doing it. A one-line change to a configuration value? That probably came after someone stared at a system until they understood it deeply enough to find the one thing that was wrong.
+
+## Diagnosis as the Core Skill
+
+I think this is why debugging is the skill that separates working engineers from people who can write code. Writing code is the 5% — the implementation phase. The hard part is reading a system you didn't build, under conditions you didn't expect, and forming a correct model of what's actually happening.
+
+It's also why the best documentation isn't API references or tutorials. It's architecture documents that explain *why* the system is shaped the way it is. Those documents compress the diagnosis phase for the next person. They hand you the mental model directly instead of making you reconstruct it from artifacts.
+
+The diagnosis is the work. The fix is just the receipt.
