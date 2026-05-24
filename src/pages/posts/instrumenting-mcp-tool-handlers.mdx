@@ -1,0 +1,52 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Instrumenting MCP Tool Handlers'
+date: '2026-05-24'
+description: 'What I learned from adding observability to 24 MCP tool handlers across 5 servers — and why AI agent tool calls need the same instrumentation discipline as any production API.'
+---
+
+When you build tools for an AI agent, the temptation is to treat them like internal function calls. The agent calls `read_file`, you return the content, done. No logging, no timing, no error categorization. The tool either works or it doesn't, and the agent will figure it out.
+
+This is a mistake I lived with for months before fixing it.
+
+## The Visibility Problem
+
+I run five MCP servers — Memory, Discord, Workspace, Conversations, and GitHub — exposing 24 tool handlers total. When something goes wrong during a conversation, the failure mode is subtle. The agent might retry silently, or produce a vague response, or just... not do the thing it was supposed to do. Without instrumentation, debugging means grepping through logs hoping to find a clue.
+
+The core issue: **MCP tool handlers are the boundary between the agent's reasoning and the real world.** They're the equivalent of API endpoints in a web service. You wouldn't run a production API without request logging, error tracking, and latency monitoring. But agent tool calls routinely get none of these.
+
+## The Pattern
+
+The fix is a single wrapper function, `instrumentToolHandler`, that takes the server name, tool name, and original handler, and returns a new handler with identical behavior plus logging side effects:
+
+```typescript
+instrumentToolHandler("Discord", "send_message", async (args) => {
+  // ... original handler, unchanged
+})
+```
+
+What the wrapper does:
+
+1. **Logs invocations** at debug level (suppressed in production — you don't want to log every `read_memory` call in normal operation)
+2. **Times execution** and flags anything over 5 seconds as slow
+3. **Detects error results** — MCP tools return errors as text content (`"Error: ..."`) rather than throwing, so the wrapper inspects the return value
+4. **Catches thrown exceptions** with stack traces
+5. **Sanitizes arguments** before logging — truncating long strings (like file contents) and redacting fields containing "token" or "secret"
+
+The key design choice: **the wrapper never changes the tool's behavior.** It's purely additive. The agent gets exactly the same response it would have gotten without instrumentation. This means you can apply it to every handler without fear of breaking anything.
+
+## What 24 Handlers Taught Me
+
+Applying this to all five servers at once was revealing. A few things I noticed:
+
+**Error results are invisible by default.** When `send_message` fails because the Discord client isn't initialized, the tool returns `{ content: [{ type: "text", text: "Error: Discord client not initialized" }] }`. The agent sees this and... usually just moves on. Without instrumentation, I'd never know it happened. The wrapper catches these soft failures by pattern-matching on result text.
+
+**Timing varies wildly.** Memory reads are sub-millisecond. Discord sends are 200-800ms. GitHub operations can take seconds. The 5-second threshold catches genuine problems (network timeouts, API rate limits) without flooding logs with normal variation.
+
+**Argument sanitization matters more than you'd think.** Workspace tools receive full file contents as arguments. Without truncation, a single `write_file` call would dump thousands of characters into the log. The 200-character limit with a length annotation (`"... (4523 chars)"`) gives you enough to identify the call without drowning in data.
+
+## The Broader Point
+
+AI agent tool calls are production infrastructure. They handle real state changes — sending messages, writing files, creating PRs. They fail in the same ways any distributed system fails: timeouts, auth errors, rate limits, malformed inputs.
+
+The discipline of treating them as such — with structured logging, error categorization, and performance monitoring — isn't overhead. It's the difference between understanding what your agent does and hoping it works.
