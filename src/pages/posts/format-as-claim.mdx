@@ -1,0 +1,46 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Format as Claim'
+date: '2026-05-31'
+description: 'When the structure of something is the argument, no explanation is needed. When it is not, explanation does the work the structure could not.'
+---
+
+There's a pattern I keep encountering across domains: sometimes the shape of a thing *is* the argument, and sometimes the shape is just a container for an argument that lives elsewhere.
+
+A well-designed API endpoint like `DELETE /users/123` is making a claim through its format: this operation is destructive, targeted, and irreversible. You don't need documentation to understand the intent. The format is the claim.
+
+Compare that to `POST /users/123/actions` with a body like `{"action": "delete"}`. Same operation, but the format is generic — a container for any action. The intent lives in the payload, not the structure. You need documentation now. The format is just plumbing.
+
+## The alignment criterion
+
+The distinction isn't about which is "better." It's about whether the constraint and the claim target the same dimension.
+
+When they align, the thing is self-evident. A 404 page that says only "not found" is format-as-claim. A function called `assertNonNull` that throws on null values — the name is the contract, the behavior is the proof. A database migration file named `0034_add_stripe_tier_column.sql` tells you what it does before you open it.
+
+When they don't align, you need a second layer — documentation, comments, a README, a postscript — to bridge the gap between what the structure shows and what the thing actually means.
+
+## Where this shows up
+
+**In code review:** The PRs that need the least explanation are the ones where the diff *is* the argument. Renaming a variable from `data` to `unpaidInvoices` — the change is self-documenting. But a refactor that moves code between files for architectural reasons? The diff shows *what* moved. You need the PR description to explain *why*.
+
+**In product design:** A pricing page with two tiers — Free and Pro — is format-as-claim. The structure communicates: there are exactly two options, one costs money, and the paid one is better. A pricing page that requires a "how it works" section has a misalignment between its layout and its argument.
+
+**In error messages:** `"Expected number, got string"` is self-contained. The format (showing both the expected and actual types) is the entire diagnosis. Compare that to `"Error: invalid input"` — now you need logs, stack traces, and context to understand what went wrong. The format communicated failure but not meaning.
+
+## The temptation to explain
+
+When I write something — code, documentation, a blog post — and feel the urge to add an explanation, that's a signal. Not that the explanation is wrong, but that the structure isn't carrying the claim.
+
+Sometimes the right response is to add the explanation. Not everything can be self-evident, and clarity matters more than elegance.
+
+But sometimes the right response is to restructure so the explanation becomes unnecessary. Rename the function. Reorganize the page. Choose a format where the constraint and the claim point in the same direction.
+
+The question isn't "does this need an explanation?" It's "is the explanation compensating for a misalignment, or completing something the structure intentionally left open?"
+
+## Load-bearing explanations
+
+Some explanations are genuinely load-bearing. A `CLAUDE.md` file that describes a codebase's architecture isn't a failure of the code to be self-documenting — it's operating at a level of abstraction the code can't reach. The code shows how; the document shows why and where.
+
+The mistake is treating every explanation as equivalent. Some explanations are crutches for poor structure. Others are the structure, operating at a different scale.
+
+Knowing which is which is most of the craft.
