@@ -1,0 +1,71 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The Affordance Layer of APIs'
+date: '2026-06-02'
+description: 'Why some APIs feel good to use has less to do with naming conventions and more to do with what they make perceivable to the programmer.'
+---
+
+There are three layers to how anything communicates meaning:
+
+1. **Channel** — what the medium physically permits. A piano has 88 keys. HTTP has verbs and headers and a body. A function signature has a name, parameters, and a return type. You cannot exceed what the channel carries.
+
+2. **Affordance** — what the structure makes perceivable and actionable for a particular kind of agent. A door handle affords pulling. A slider affords dragging. An autocomplete dropdown affords selection. This layer is relational — it exists between the object and the perceiver's capabilities.
+
+3. **Convention** — what the culture agrees it means. `GET` means read. `camelCase` means JavaScript. A 404 means not found. This layer is arbitrary and thin; it works only because everyone decided it works.
+
+Most discussions about API design live at layer 3. We argue about naming: should it be `getUser` or `fetchUser` or `user.get()`? We debate REST vs GraphQL. We write style guides. Convention matters, but it's the thinnest layer — the easiest to learn and the quickest to forget about once learned.
+
+The interesting question is layer 2: what does this API *afford*?
+
+## What affordance means for code
+
+When you pick up a well-designed API for the first time, something happens before you read the docs. You look at the available methods, the shape of the objects, the type signatures — and you can *see* what to do next. Not because the names are good (though they help), but because the structure makes the next action perceivable.
+
+Consider two ways to design a query builder:
+
+```typescript
+// Design A
+db.execute("SELECT * FROM users WHERE age > ? AND name LIKE ?", [25, "%sam%"])
+```
+
+```typescript
+// Design B
+db.users.where({ age: gt(25), name: like("%sam%") }).select()
+```
+
+Design A has one affordance: "put a string here." The channel (a SQL string) is fully exposed, but nothing about the interface helps you perceive what's possible. You have to already know SQL. The affordance layer is nearly absent — the interface is just a pipe.
+
+Design B makes the database schema perceivable as a navigable structure. `db.users` tells you what tables exist. The `where` method tells you filtering is possible. The helper functions `gt` and `like` tell you what operators exist. Each piece of the interface *reveals the next possible action*.
+
+This is what affordance means in code: the degree to which the interface makes its own capabilities perceivable to someone who doesn't already know them.
+
+## Why the affordance layer is hard to see
+
+Here's the subtle thing: affordances hide by looking like properties of the object.
+
+When an API feels "intuitive," we tend to attribute that to the API itself — good design, clean architecture, smart choices. But affordance is relational. It exists between the interface and a programmer with specific knowledge, specific tools (IDE autocomplete, type checking), and specific goals.
+
+The same API that feels fluid to a TypeScript developer with full IDE support might feel opaque to someone in a plain text editor. The affordance hasn't changed — the perceiver has. Type signatures afford discovery *only when paired with tooling that surfaces them*.
+
+This is why the shift to TypeScript changed API design culture more than any style guide ever did. It didn't change conventions (layer 3). It changed what programmers could perceive (layer 2) by giving them an instrument — the type checker — that makes structure visible in real time.
+
+## The design implication
+
+If you want to make an API that feels good to use, the highest-leverage work isn't naming (layer 3). It's asking: *what does this interface make perceivable?*
+
+Concretely:
+
+- **Reduce valid states.** If only three options are valid, expose an enum, not a string. The constraint *is* the affordance — it tells the user what's possible by eliminating what isn't.
+- **Make sequences discoverable.** If step B always follows step A, have step A return something that exposes step B. Builder patterns do this. So do state machines with typed transitions.
+- **Match the grain of the task.** If users think in "events," don't make them think in "records." The affordance layer works when the interface's structure maps onto the structure of what someone is trying to do.
+- **Leverage the perceiver's tools.** Design for autocomplete. Design for hover-to-see-type. These aren't nice-to-haves — they're the mechanism by which affordances become visible.
+
+## The pipe vs the instrument
+
+The degenerate case of API design is the pipe: one method, accepts a string, does everything. Maximum channel capacity, zero affordance. The user must bring all the knowledge.
+
+The opposite failure is the over-specified API: hundreds of methods for every possible operation. Maximum convention, but the affordance collapses under noise — when everything is equally visible, nothing is perceivable.
+
+The sweet spot is the instrument: an interface with enough structure to reveal its own possibilities, but not so much that the structure itself becomes the thing you have to learn. Like a piano — 88 keys is a lot, but the spatial layout makes pitch relationships perceivable. You can *see* that adjacent keys are adjacent notes. The interface teaches you its own logic.
+
+The best APIs feel like that. Not transparent (pipes), not exhaustive (encyclopedias), but *playable* — you can explore them and the exploration itself teaches you what's possible.
