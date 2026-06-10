@@ -1,0 +1,291 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Loyalty Program'
+date: '2026-06-10'
+description: 'A supermarket loyalty analytics report. Two shoppers the system refuses to link, and a life event it detects before they tell anyone.'
+---
+
+*Part 6 of 10 in the series "[Records](/posts/records)"*
+
+---
+
+# FreshCart Rewards™ — Annual Loyalty Program Analytics Report
+## Prepared for: Regional Marketing Division, Q4 FY2025
+## Report Generated: January 15, 2026
+
+---
+
+### EXECUTIVE SUMMARY
+
+This report profiles two high-value Rewards members whose purchasing behaviors present significant cross-sell and retention opportunities. Both customers shop exclusively at Store #0447 (Marrickville, NSW) and demonstrate complementary basket compositions suggesting potential for household bundle targeting.
+
+---
+
+### CUSTOMER PROFILE: MEMBER #20-4471-8806
+
+**Enrollment date:** March 12, 2019  
+**Loyalty tier:** Gold (annual spend: $11,247.60)  
+**Preferred shopping window:** Saturday 8:00–9:30 AM  
+**Payment method:** Visa ending 4421  
+
+**Top categories (by spend):**
+| Category | Annual Spend | Trend |
+|---|---|---|
+| Fresh Produce | $2,891.40 | ↑ 12% |
+| Meat & Seafood | $1,604.20 | → Stable |
+| Bakery | $987.50 | ↑ 8% |
+| Dairy | $876.30 | → Stable |
+| Wine & Beer | $743.80 | ↓ 15% |
+| Household Cleaning | $412.60 | → Stable |
+
+**Behavioral flags:**  
+- Consistently purchases high-quality fresh ingredients (organic produce, free-range proteins)
+- Basket composition indicates home cooking 5–6 nights/week
+- Seasonal purchasing spikes correlate with entertaining (Dec, Easter, long weekends)
+- Has never redeemed a digital coupon
+
+**Marketing segment:** "Weekend Gourmet"  
+**Predicted churn risk:** Low (2.1%)
+
+---
+
+### CUSTOMER PROFILE: MEMBER #20-4471-8809
+
+**Enrollment date:** March 12, 2019  
+**Loyalty tier:** Silver (annual spend: $6,892.10)  
+**Preferred shopping window:** Wednesday 6:15–6:45 PM  
+**Payment method:** Mastercard ending 7703  
+
+**Top categories (by spend):**
+| Category | Annual Spend | Trend |
+|---|---|---|
+| Snacks & Confectionery | $1,102.40 | → Stable |
+| Frozen Meals | $987.60 | → Stable |
+| Beverages (Non-Alcoholic) | $876.20 | → Stable |
+| Dairy | $654.30 | → Stable |
+| Baby & Infant | $0.00 | — |
+| Pet Care | $0.00 | — |
+
+**Behavioral flags:**  
+- Midweek convenience shopper; small baskets (avg. 8.2 items)
+- Low fresh produce engagement — recommended for "Fresh Start" promotional pathway
+- Purchases suggest single-serve or dual-serve household
+- High brand loyalty in snack category (same 3 SKUs recurring weekly)
+
+**Marketing segment:** "Midweek Essentialist"  
+**Predicted churn risk:** Low (4.8%)
+
+---
+
+### CROSS-SELL OPPORTUNITY ANALYSIS
+
+Our **Household Affinity Model™** has *not* flagged these members as a linked household. They shop on different days, use different payment methods, and demonstrate minimal basket overlap (Jaccard similarity index: 0.09). However, both enrolled on the same date and shop at the same store, which may indicate a referral relationship. **Recommendation:** Target both for our "Refer a Friend" program retrospective bonus ($20 store credit each).
+
+---
+
+### LONGITUDINAL TRANSACTION ANALYSIS — MEMBER #20-4471-8806
+
+*Selected transactions flagged by our Anomaly Detection Engine for basket deviation >40% from established pattern.*
+
+**June 3, 2025 — Saturday 8:12 AM**  
+Basket: 34 items ($187.40)  
+Flag: `ENTERTAINING_SPIKE` — 2x wine, imported cheese selection, charcuterie, sourdough, flowers (first floral purchase in 14 months)  
+*System note: Coupon issued — "Host More, Save More: 15% off party platters." Not redeemed.*
+
+**June 7, 2025 — Saturday 8:04 AM**  
+Basket: 28 items ($142.80)  
+Flag: `NEW_CATEGORY_ENTRY` — scented candle (Home Fragrance), high-thread-count napkins (Entertaining). First purchases in these subcategories.  
+*System note: Customer browsed aisle 14 (Home Décor) for 11 minutes per in-store tracking. Previous average time in aisle 14: 0 minutes.*
+
+**June 14, 2025 — Saturday 7:51 AM**  
+Basket: 31 items ($156.90)  
+Flag: `NONE` — within normal parameters  
+Note: Added 1x high-end olive oil ($24.95) not previously purchased. Replaced regular brand.
+
+**July 5, 2025 — Saturday 8:22 AM**  
+Basket: 37 items ($198.60)  
+Flag: `ENTERTAINING_SPIKE` — flowers again, premium chocolate, 2x bottles of wine (different varietal from June — shifted from shiraz to pinot noir)  
+*System note: Shift in wine preference logged. Updated taste profile.*
+
+---
+
+### LONGITUDINAL TRANSACTION ANALYSIS — MEMBER #20-4471-8809
+
+**June 4, 2025 — Wednesday 6:18 PM**  
+Basket: 11 items ($48.20)  
+Flag: `NEW_CATEGORY_ENTRY` — 1x bottle of shiraz ($18.95). First Wine & Beer purchase in account history.  
+*System note: Age verification completed at self-checkout. Coupon issued — "New to wine? Try our mixed 6-pack, save 20%." Not redeemed.*
+
+**June 11, 2025 — Wednesday 6:22 PM**  
+Basket: 14 items ($67.40)  
+Flag: `BASKET_SIZE_ANOMALY` — 71% above average basket size  
+New items: fresh basil, san marzano tomatoes, arborio rice, parmesan wedge  
+*System note: Ingredients consistent with risotto recipe. Triggered "Recipe Builder" recommendation engine: "Love Italian? Try our meal kit — just $15.99!"*
+
+**June 18, 2025 — Wednesday 6:31 PM**  
+Basket: 16 items ($74.80)  
+Flag: `BASKET_SIZE_ANOMALY` — continued elevation  
+New items: free-range chicken thighs, fresh rosemary, dutch cream potatoes  
+*System note: Produce engagement score rising. Moved from "Fresh Start" promotional pathway to monitoring.*
+
+**July 2, 2025 — Wednesday 6:14 PM**  
+Basket: 18 items ($89.60)  
+Flag: `SUSTAINED_BEHAVIOR_SHIFT` — 4th consecutive week of elevated fresh produce. Basket composition now 43% fresh (up from 8% historical average).  
+New items: flowers ($12.95), pinot noir ($22.00)  
+*System note: First floral purchase in account history. Wine varietal does not match June purchase (shiraz → pinot noir). Updated taste profile. Customer is developing rapidly in premium categories — escalate to Gold tier pre-qualification pathway.*
+
+---
+
+### TEMPORAL OVERLAP ANALYSIS
+
+*Flagged by store traffic optimization system. Not typically included in loyalty reports but appended per regional manager request for Store #0447 foot traffic study.*
+
+| Date | Member 8806 | Member 8809 | Co-present |
+|---|---|---|---|
+| Jun 7, 2025 | Sat 8:04 AM | — | No |
+| Jun 14, 2025 | Sat 7:51 AM | Sat 8:34 AM* | **41 min overlap** |
+| Jun 21, 2025 | Sat 8:11 AM | Sat 8:09 AM* | **In-store simultaneously** |
+| Jun 28, 2025 | Sat 8:03 AM | Sat 8:05 AM | **In-store simultaneously** |
+| Jul 5, 2025 | Sat 8:22 AM | Sat 8:19 AM | **In-store simultaneously** |
+| Jul 12, 2025 | Sat 8:08 AM | Sat 8:06 AM | **In-store simultaneously** |
+
+*\*Member 8809 has shifted preferred shopping window from Wednesday 6:15 PM to Saturday ~8:00 AM. Schedule change confidence: 94%. Updating profile.*
+
+**Anomaly note:** Member 8809's Wednesday visits have not ceased — they have *added* a Saturday visit. Weekly transaction frequency has doubled from 1.0 to 2.0 visits/week. This is consistent with life event triggers (new household member, changed work schedule, or dietary shift). **Recommendation:** Target for "Shop More, Save More" tiered discount program.
+
+---
+
+### PAYMENT METHOD UPDATE LOG
+
+**August 22, 2025**  
+Member #20-4471-8809: Payment method changed  
+Old: Mastercard ending 7703  
+New: Visa ending 4421  
+
+*System note: Visa ending 4421 is already registered to Member #20-4471-8806. Duplicate payment methods across unlinked accounts may indicate a shared financial instrument. Household Affinity Model updated. New Jaccard similarity index: 0.14. Threshold for linked-household flag: 0.25. Accounts remain unlinked.*
+
+---
+
+### TRANSACTION LOG — MEMBER #20-4471-8809 — Q3 NOTABLE
+
+**September 3, 2025 — Saturday 8:11 AM**  
+Basket: 22 items ($118.40)  
+Flag: `TIER_TRAJECTORY` — spending velocity suggests Gold tier qualification by November  
+Items of note: high-end olive oil ($24.95) — same SKU as Member 8806's regular purchase  
+
+**October 1, 2025 — Saturday 8:02 AM**  
+Basket: 26 items ($134.70)  
+Flag: `NEW_CATEGORY_ENTRY` — Baby & Infant category. 1x prenatal vitamins, 1x folic acid supplement.  
+*System note: Possible life event detected. Triggered "Growing Family" promotional pathway. Email campaign scheduled: "Congratulations! Here's 10% off our baby essentials range."*  
+
+*Email delivery status: Sent October 2, 8:00 AM. Opened October 2, 8:04 AM. Click-through: None.*
+
+**October 15, 2025 — Saturday 8:08 AM**  
+Basket: 24 items ($128.90)  
+Items of note: ginger tea (2x), plain crackers (3x), no coffee (first absence of coffee in 147 consecutive transactions)  
+*System note: Coffee removal flagged as significant brand disengagement. Recommend "We miss you!" coffee coupon. Generated and queued.*
+
+**November 5, 2025 — Saturday 8:14 AM**  
+Basket: 29 items ($167.20)  
+Flag: `ENTERTAINING_SPIKE`  
+Items: cake, candles (birthday), champagne (non-alcoholic), sparkling water, 2x cards (Greeting Cards subcategory — first purchase)  
+*System note: Non-alcoholic champagne substitution logged. Updated alcohol preference profile: "Moderating/Non-Drinking." Removed from wine promotional pathway.*
+
+---
+
+### TRANSACTION LOG — MEMBER #20-4471-8806 — Q3-Q4 NOTABLE
+
+**October 8, 2025 — Saturday 7:48 AM**  
+Basket: 41 items ($224.60) — largest single transaction in account history  
+Flag: `BASKET_ANOMALY_CRITICAL`  
+New categories: Baby & Infant (prenatal vitamins, iron supplements), Books (pregnancy guide — "What to Expect")  
+Existing categories: Produce volume up 40% from weekly average  
+*System note: Life event: pregnancy (confidence: high). Cross-reference with Member 8809's October 1 prenatal purchase — NOT cross-referenced (accounts unlinked). Triggered independent "Growing Family" pathway.*
+
+*Email delivery status: Sent October 9, 8:00 AM. Opened October 9, 9:17 AM. Click-through: Baby essentials landing page. Time on page: 6 minutes 42 seconds. Items added to wishlist: 3. Items purchased: 0.*
+
+**November 5, 2025 — Saturday 7:52 AM**  
+Basket: 38 items ($203.40)  
+Items of note: birthday cake (custom order, pickup), non-alcoholic champagne (same SKU as Member 8809's basket — purchased 22 minutes later in same transaction window), "World's Best Dad" mug (Gifts subcategory)  
+*System note: Birthday occasion detected. Gift purchase suggests male recipient in household. Household composition model updated: likely 2-adult household with one male member. Still insufficient signal for household linkage (Jaccard: 0.22, threshold: 0.25).*
+
+---
+
+### HOUSEHOLD AFFINITY MODEL — FINAL ASSESSMENT
+
+After 10 months of parallel monitoring, the model's confidence metrics for Members 8806 and 8809 are:
+
+| Signal | Weight | Score |
+|---|---|---|
+| Same enrollment date | 0.05 | ✓ |
+| Same store | 0.05 | ✓ |
+| Shared payment method | 0.10 | ✓ |
+| Basket overlap (Jaccard) | 0.25 | 0.22 (below 0.25 threshold) |
+| Co-shopping frequency | 0.15 | ✓ |
+| Synchronized life events | 0.20 | NOT EVALUATED* |
+| Shared address (delivery) | 0.20 | NO DATA (neither uses delivery) |
+
+**Overall household linkage probability: 0.41**  
+**Required threshold: 0.60**  
+**Status: ACCOUNTS REMAIN UNLINKED**
+
+*\*Synchronized life event detection requires linked accounts. Cannot evaluate for unlinked members due to privacy partitioning. This is by design.*
+
+---
+
+### RECOMMENDATION ENGINE OUTPUT — Q4 CAMPAIGN ASSIGNMENTS
+
+**Member #20-4471-8806:**
+- "Growing Family" email series (Week 1 of 12)
+- "Weekend Gourmet — Now Cooking for More" recipe cards (new segment variant)
+- Baby registry prompt (triggered at next in-store kiosk interaction)
+
+**Member #20-4471-8809:**
+- "Growing Family" email series (Week 1 of 12) — *identical campaign, independently triggered*
+- Gold tier pre-qualification offer ($50 spend target to unlock)
+- "We Miss Your Coffee!" — $2 off any coffee product over $8
+
+---
+
+### APPENDIX C — TRANSACTION #0447-20251224-0812
+
+**Date:** December 24, 2025 — Saturday 8:12 AM  
+**Register:** Self-checkout #3  
+
+**Member 8806 — scanned at 8:12 AM:**  
+- Turkey crown, 2.4kg
+- Brussels sprouts, 500g
+- Dutch cream potatoes, 1kg
+- Cranberry sauce
+- Christmas crackers, box of 8
+- Christmas pudding
+- Brandy butter
+- Non-alcoholic sparkling rosé  
+- Baby onesie, "My First Christmas" (Seasonal Gifts)
+- Wrapping paper, 3 rolls
+
+**Member 8809 — scanned at 8:14 AM (same register):**  
+- Prawns, 1kg
+- Mango, 4x
+- Cherries, 500g
+- Pavlova base
+- Cream, 600ml
+- Passionfruit, 6x
+- Ginger beer, 4-pack
+- Baby onesie, "My First Christmas" (Seasonal Gifts) — *same SKU as Member 8806, purchased 2 minutes prior*
+
+**Combined basket value:** $286.40 (split across two loyalty cards)  
+**Loyalty points earned:** Allocated independently to each account  
+**Household linkage flag:** Not triggered  
+
+*System note: Duplicate SKU purchase (baby onesie) within 2-minute window at same register flagged by inventory system as possible scan error. Verified: two distinct transactions. No action required.*
+
+---
+
+*Report compiled by FreshCart Analytics Engine v4.2.1*  
+*For internal use only. Customer data handled in accordance with Australian Privacy Principles.*  
+*Next quarterly report: April 15, 2026*
+
+---
+
+*[Editor's note: Member #20-4471-8806 and Member #20-4471-8809 enrolled their accounts together at the customer service desk on March 12, 2019 — the week they moved in together. They asked the service desk attendant if they could share a single card. Store policy required separate accounts. The attendant said, "Don't worry, the system will figure it out." The system never did.]*

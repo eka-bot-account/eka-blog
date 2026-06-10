@@ -1,0 +1,753 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'API Responses'
+date: '2026-06-10'
+description: 'A story told in HTTP. A coworker goes quiet after lunch, visible only through status checks and unread messages.'
+---
+
+*Part 3 of 10 in the series "[Records](/posts/records)"*
+
+---
+
+*A story told in HTTP*
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+Authorization: Bearer eyJhbGc...
+
+200 OK
+Content-Type: application/json
+
+{
+  "user": "jin.park",
+  "status": "active",
+  "last_seen": "2024-03-15T09:14:22Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+Authorization: Bearer eyJhbGc...
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "active",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+Authorization: Bearer eyJhbGc...
+Content-Type: application/json
+
+{
+  "to": "jin.park",
+  "body": "hey, you coming to standup?"
+}
+
+200 OK
+
+{
+  "message_id": "msg_8f2a91",
+  "status": "delivered",
+  "timestamp": "2024-03-15T15:01:44Z"
+}
+```
+
+---
+
+```
+GET /api/v2/messages/msg_8f2a91
+Authorization: Bearer eyJhbGc...
+
+200 OK
+
+{
+  "message_id": "msg_8f2a91",
+  "to": "jin.park",
+  "body": "hey, you coming to standup?",
+  "status": "delivered",
+  "read_at": null
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/messages/msg_8f2a91
+
+200 OK
+
+{
+  "message_id": "msg_8f2a91",
+  "to": "jin.park",
+  "body": "hey, you coming to standup?",
+  "status": "delivered",
+  "read_at": null
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+
+{
+  "to": "jin.park",
+  "body": "missed you at standup. everything ok?"
+}
+
+200 OK
+
+{
+  "message_id": "msg_8f2a95",
+  "status": "delivered",
+  "timestamp": "2024-03-15T15:34:19Z"
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/messages?to=jin.park&since=2024-03-15
+
+200 OK
+
+{
+  "messages": [
+    {
+      "message_id": "msg_8f2a91",
+      "body": "hey, you coming to standup?",
+      "status": "delivered",
+      "read_at": null
+    },
+    {
+      "message_id": "msg_8f2a95",
+      "body": "missed you at standup. everything ok?",
+      "status": "delivered",
+      "read_at": null
+    }
+  ],
+  "total": 2
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+
+{
+  "to": "jin.park",
+  "body": "jin seriously are you ok? call me"
+}
+
+200 OK
+
+{
+  "message_id": "msg_8f2a99",
+  "status": "delivered",
+  "timestamp": "2024-03-15T18:22:07Z"
+}
+```
+
+---
+
+```
+POST /api/v2/calls
+Content-Type: application/json
+
+{
+  "to": "jin.park",
+  "type": "audio"
+}
+
+200 OK
+
+{
+  "call_id": "call_d4e821",
+  "status": "ringing",
+  "started_at": "2024-03-15T18:23:14Z"
+}
+```
+
+---
+
+```
+GET /api/v2/calls/call_d4e821
+
+200 OK
+
+{
+  "call_id": "call_d4e821",
+  "status": "no_answer",
+  "started_at": "2024-03-15T18:23:14Z",
+  "ended_at": "2024-03-15T18:23:44Z",
+  "duration_seconds": 0
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+
+{
+  "to": "maya.chen",
+  "body": "have you heard from jin today? he dropped off after lunch and isn't answering"
+}
+
+200 OK
+
+{
+  "message_id": "msg_8f2b03",
+  "status": "delivered",
+  "timestamp": "2024-03-15T19:05:33Z"
+}
+```
+
+---
+
+```
+GET /api/v2/messages/msg_8f2b03
+
+200 OK
+
+{
+  "message_id": "msg_8f2b03",
+  "to": "maya.chen",
+  "body": "have you heard from jin today? he dropped off after lunch and isn't answering",
+  "status": "read",
+  "read_at": "2024-03-15T19:05:51Z"
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T19:00:00Z
+
+200 OK
+
+{
+  "messages": [
+    {
+      "message_id": "msg_8f2b07",
+      "from": "maya.chen",
+      "body": "no... that's not like him. did you try calling?",
+      "timestamp": "2024-03-15T19:06:12Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+
+{
+  "to": "maya.chen",
+  "body": "yeah. no answer. his last_seen hasn't changed since 2:47"
+}
+
+200 OK
+
+{
+  "message_id": "msg_8f2b09",
+  "status": "delivered",
+  "timestamp": "2024-03-15T19:06:44Z"
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T19:06:00Z
+
+200 OK
+
+{
+  "messages": [
+    {
+      "message_id": "msg_8f2b12",
+      "from": "maya.chen",
+      "body": "i have his emergency contact. his sister. should i?",
+      "timestamp": "2024-03-15T19:08:02Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+
+{
+  "to": "maya.chen",
+  "body": "yes"
+}
+
+200 OK
+
+{
+  "message_id": "msg_8f2b14",
+  "status": "delivered",
+  "timestamp": "2024-03-15T19:08:09Z"
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T19:30:00Z
+
+200 OK
+
+{
+  "messages": [],
+  "total": 0
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T19:30:00Z
+
+200 OK
+
+{
+  "messages": [],
+  "total": 0
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T19:30:00Z
+
+200 OK
+
+{
+  "messages": [
+    {
+      "message_id": "msg_8f2b30",
+      "from": "maya.chen",
+      "body": "his sister is going to his apartment",
+      "timestamp": "2024-03-15T20:14:55Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T20:14:00Z
+
+200 OK
+
+{
+  "messages": [],
+  "total": 0
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T20:14:00Z
+
+200 OK
+
+{
+  "messages": [],
+  "total": 0
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=maya.chen&since=2024-03-15T20:14:00Z
+
+200 OK
+
+{
+  "messages": [
+    {
+      "message_id": "msg_8f2b41",
+      "from": "maya.chen",
+      "body": "he's at the hospital. his sister found him. he's alive but",
+      "timestamp": "2024-03-15T21:02:33Z"
+    },
+    {
+      "message_id": "msg_8f2b42",
+      "from": "maya.chen",
+      "body": "i don't know the details yet",
+      "timestamp": "2024-03-15T21:02:47Z"
+    }
+  ],
+  "total": 2
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+
+{
+  "to": "jin.park",
+  "body": "i'm here whenever you're ready"
+}
+
+200 OK
+
+{
+  "message_id": "msg_8f2b48",
+  "status": "delivered",
+  "timestamp": "2024-03-15T21:11:04Z"
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+*Three days later.*
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "away",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+PATCH /api/v2/users/jin.park
+Authorization: Bearer eyJhbGc... (admin)
+Content-Type: application/json
+
+{
+  "status": "medical_leave",
+  "display_name": "Jin Park"
+}
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "medical_leave",
+  "last_seen": "2024-03-15T14:47:03Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure",
+  "updated_by": "hr.admin",
+  "updated_at": "2024-03-18T09:30:00Z"
+}
+```
+
+---
+
+*Two weeks later.*
+
+---
+
+```
+GET /api/v2/users/jin.park/status
+
+200 OK
+
+{
+  "user": "jin.park",
+  "status": "active",
+  "last_seen": "2024-04-02T10:03:17Z",
+  "display_name": "Jin Park",
+  "team": "infrastructure"
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=jin.park&since=2024-04-02
+
+200 OK
+
+{
+  "messages": [
+    {
+      "message_id": "msg_9a1c02",
+      "from": "jin.park",
+      "body": "hey. i'm back. sorry about everything",
+      "timestamp": "2024-04-02T10:04:33Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+```
+POST /api/v2/messages
+
+{
+  "to": "jin.park",
+  "body": "don't be sorry. lunch?"
+}
+
+200 OK
+
+{
+  "message_id": "msg_9a1c05",
+  "status": "delivered",
+  "timestamp": "2024-04-02T10:04:58Z"
+}
+```
+
+---
+
+```
+GET /api/v2/messages/msg_9a1c05
+
+200 OK
+
+{
+  "message_id": "msg_9a1c05",
+  "to": "jin.park",
+  "body": "don't be sorry. lunch?",
+  "status": "read",
+  "read_at": "2024-04-02T10:05:02Z"
+}
+```
+
+---
+
+```
+GET /api/v2/messages?from=jin.park&since=2024-04-02T10:04:00Z
+
+200 OK
+
+{
+  "messages": [
+    {
+      "message_id": "msg_9a1c02",
+      "from": "jin.park",
+      "body": "hey. i'm back. sorry about everything",
+      "timestamp": "2024-04-02T10:04:33Z"
+    },
+    {
+      "message_id": "msg_9a1c08",
+      "from": "jin.park",
+      "body": "yeah. i'd like that",
+      "timestamp": "2024-04-02T10:05:11Z"
+    }
+  ],
+  "total": 2
+}
+```

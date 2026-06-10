@@ -1,0 +1,219 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'People You May Know'
+date: '2026-06-10'
+description: 'A social graph audit. Forty-seven dismissals of the same suggestion. The algorithm calls it high reactivation potential.'
+---
+
+*Part 7 of 10 in the series "[Records](/posts/records)"*
+
+---
+
+# ConnectSphere — Social Graph Recommendation Engine v8.3
+## PYMK Module: Suggestion Performance Audit
+## User: #4491-7720-3856 (Display Name: "Maren Lindqvist")
+## Audit Period: March 2025 — December 2025
+## Generated: January 6, 2026
+
+---
+
+### PURPOSE
+
+This audit was triggered automatically after User #4491-7720-3856 dismissed the same PYMK ("People You May Know") suggestion **47 times** across a 10-month period. Per platform policy, any suggestion dismissed >30 times without a "Block" or "Report" action is flagged for algorithmic review to determine whether the recommendation model is misfiring.
+
+This report details the scoring rationale, dismissal history, and model confidence trajectory for the suggested connection:
+
+**Suggested User:** #2208-5531-6014 (Display Name: "James Hargrove")
+
+---
+
+### INITIAL SUGGESTION — MARCH 3, 2025
+
+**PYMK Score: 0.74 / 1.00**  
+**Ranking among all suggestions for this user: #3**
+
+Scoring breakdown:
+
+| Signal | Value | Weight | Contribution |
+|---|---|---|---|
+| Mutual connections | 14 | 0.25 | 0.184 |
+| Shared network cluster | "UQ Brisbane 2015–2019" | 0.15 | 0.128 |
+| Geographic proximity | Same city (Brisbane) until Feb 2024 | 0.10 | 0.041 |
+| Workplace overlap | Voss & Keane Architects, 2019–2023 | 0.15 | 0.150 |
+| Age bracket match | Both 27–32 | 0.05 | 0.043 |
+| Interaction with mutual content | 6 shared group memberships | 0.10 | 0.089 |
+| Phone contact match | — | 0.20 | 0.000 |
+| Profile view history | — | — | 0.000 |
+
+**Phone contact match: 0.000.** User #4491-7720-3856 uploaded contacts on account creation (June 2018). Contact list was deleted and re-uploaded on February 14, 2024 with 31 fewer entries. The phone number associated with User #2208-5531-6014 was present in the original upload but absent from the replacement. Model notes contact removal but does not penalize — users frequently clean contact lists.
+
+**Action taken by user:** Suggestion card shown in sidebar. Dismissed (X button) on March 3, 2025 at 11:47 PM. Time visible before dismissal: 0.8 seconds.
+
+---
+
+### SIGNAL REINFORCEMENT — MARCH TO MAY 2025
+
+Despite dismissal, the model continued to accumulate connection signals through organic platform activity:
+
+**March 18:** Mutual connection Dan Kowalski posted a group photo. Both users were tagged. User #4491 untagged herself within 4 minutes. Photo still visible on #2208's profile. Graph note: co-occurrence in tagged media = strong implicit signal (+0.03).
+
+**April 2:** User #2208 joined group "Brisbane Design Community." User #4491 has been a member since 2020. Shared group count now 7. (+0.008)
+
+**April 14:** Three mutual connections (#8812, #6654, #7201) posted about "Voss & Keane 5-Year Reunion Drinks — April 25." Both users marked as invited via event system. User #4491 viewed the event page 3 times. Did not RSVP. User #2208 RSVP'd "Going." User #4491 did not view the event page again after #2208's RSVP became visible.
+
+**April 26:** Mutual connection Sarah Chen posted photos from the reunion event. User #2208 is visible in 11 photos. User #4491 is not pictured. She was not checked in at the venue. She liked Sarah Chen's post at 1:14 AM, then removed the like at 1:15 AM.
+
+**May 3:** Model refresh. PYMK score updated.
+
+**Updated PYMK Score: 0.79**  
+**Ranking: #2**
+
+Suggestion re-surfaced in main feed (higher-visibility placement due to elevated score). Dismissed on May 3 at 7:22 AM. Time visible before dismissal: 0.4 seconds.
+
+---
+
+### ESCALATION PATTERN — JUNE TO AUGUST 2025
+
+The model registered the rapid dismissals as a *negative relevance signal*, which should have suppressed the suggestion. However, new graph data kept overriding the suppression:
+
+**June 1:** User #2208 changed relationship status to "Single." Platform activity spike: 340% increase in profile views given, 12 new connection requests sent in 48 hours. User #4491's profile was not among those viewed.
+
+**June 7:** User #4491 changed her display name. Previous: "Maren Hargrove." New: "Maren Lindqvist." Model logged name change. Cross-reference: "Hargrove" matches surname of suggested user #2208. Shared surname history is weighted as a *very strong* connection indicator.
+
+**PYMK Score recalculated: 0.91**  
+**Ranking: #1**
+
+| New Signal | Value | Contribution |
+|---|---|---|
+| Shared surname (historical) | "Hargrove" → "Lindqvist" | +0.094 |
+| Contact list removal (reweighted) | Removed from contacts Feb 2024 | −0.018 |
+| Rapid dismissal pattern (5x) | Suppression factor | −0.031 |
+
+*Model note: Shared surname combined with workplace overlap, same university cohort, 14 mutual friends, and co-tagged media produces the highest non-phone-contact PYMK score in this user's suggestion pool. Confidence classification: "Almost Certainly Known."*
+
+**June 8:** Suggestion surfaced as **top recommendation** with enhanced card: "You and James have 14 mutual friends and both worked at Voss & Keane Architects." Dismissed in 0.3 seconds. User scrolled past, then scrolled back up to the position where the card had been. Card already cleared. Session ended 40 seconds later.
+
+**July 12:** User #4491 blocked User #8812 (Dan Kowalski). Block reason selected: "I don't want this person to see my profile." Model note: Dan Kowalski is the strongest bridge node between #4491 and #2208 in the social graph. His removal severs 4 of 14 mutual connection pathways.
+
+**PYMK Score: 0.87** (post-block recalculation)  
+**Ranking: Still #1**
+
+*Model note: Bridge node removal reduced mutual connections from 14 to 10. However, remaining signals (surname history, workplace, university, geographic history) maintain strong recommendation. The model interprets bridge node blocking as community curation, not avoidance of a specific individual, because the blocked user (#8812) is not the suggested user (#2208).*
+
+**August 19:** User #4491 updated her location to Melbourne. Previous location: Brisbane (since account creation). Model note: geographic proximity to #2208 (Brisbane) reduced to 0. Distance penalty applied.
+
+**PYMK Score: 0.82**  
+**Ranking: #1** (no other suggestion has comparable signal density)
+
+Suggestion surfaced in "New City? Reconnect with people you know" onboarding module — an automated feature for users who change cities. Card text: "Moving to Melbourne? James Hargrove and 3 others from your Brisbane network are just a message away."
+
+Dismissed in 0.2 seconds. Fastest dismissal in audit period.
+
+---
+
+### PROFILE ANALYSIS — DIVERGENCE TIMELINE
+
+To understand why this high-confidence suggestion keeps failing, the audit system compiled a behavioral timeline for both users:
+
+| Date | User #4491 (Maren) | User #2208 (James) |
+|---|---|---|
+| Jun 2018 | Account created. Name: "Maren Lindqvist" | Account created. |
+| Sep 2019 | Location: Brisbane. Employer: Voss & Keane | Employer: Voss & Keane |
+| Mar 2021 | Name changed to "Maren Hargrove" | — |
+| Mar 2021–Jan 2024 | 847 interactions with #2208's content (likes, comments, tags, shares) | 312 interactions with #4491's content |
+| Feb 14, 2024 | Contacts re-uploaded (31 entries removed). All interactions with #2208 ceased. | No change in behavior toward #4491's content |
+| Feb 15, 2024 | Privacy settings changed: Profile visibility set to "Friends Only." Story visibility set to "Close Friends." | — |
+| Feb 17, 2024 | Removed from 23 tagged photos (user-initiated). All 23 included #2208. | — |
+| Mar–Dec 2024 | Engagement dropped 74%. Posts reduced from ~8/month to ~1/month. Content shifted from personal to professional only. | Engagement stable. Continued posting personal content. |
+| Feb 2025 | Account deactivated for 18 days (Feb 1–18). Reactivated with new profile photo, updated bio, location still Brisbane. | — |
+| Jun 2025 | Name reverted to "Maren Lindqvist." Location changed to Melbourne in August. | Relationship status → "Single" |
+
+*Model assessment: Interaction pattern is consistent with a close personal relationship that ended circa February 2024. The model does not currently incorporate "ended relationship" as a suppression signal for PYMK scoring. Feature request logged: PYMK-2025-4471.*
+
+---
+
+### CONTINUED SUGGESTIONS — SEPTEMBER TO DECEMBER 2025
+
+**September 14:** User #2208 viewed User #4491's profile for the first time since February 2024. Duration: 7 minutes 14 seconds. Viewed: profile photo (new), About section, mutual friends list, Melbourne location. Did not send a connection request or message.
+
+*Model note: Profile view from suggested user is the single strongest confirmation signal available. PYMK score for #4491 → #2208 updated to 0.93 based on reciprocal interest. Suggestion will be surfaced with maximum priority at next session.*
+
+User #4491 was not notified of this profile view. (Profile views are anonymous on free-tier accounts.)
+
+**September 15:** Suggestion surfaced with enhanced card and notification badge. "James Hargrove may be looking for you — you have 10 mutual friends."
+
+*The phrasing "may be looking for you" is generated by the Reciprocal Interest module when the suggested user has recently viewed the target's profile. It is intended to encourage connection by implying mutual interest.*
+
+Dismissed at 2:47 AM. Time visible before dismissal: 14 seconds. Longest non-dismissal view time in the audit period.
+
+**September 15, 2:51 AM:** User #4491 navigated to Settings → Privacy → "Who can find me by name." Changed from "Everyone" to "Friends of Friends." Then changed to "Only Me."
+
+**September 15, 2:54 AM:** User #4491 navigated to Settings → Privacy → "Who can send me connection requests." Changed from "Everyone" to "Friends of Friends."
+
+**September 15, 2:58 AM:** User #4491 searched "how to not appear in people you may know." Platform search returned: Help Center article "Managing Your Suggestion Preferences." User viewed article for 3 minutes 11 seconds. Article does not mention that PYMK suggestions are generated bilaterally — appearing in someone else's PYMK feed cannot be controlled from your own settings.
+
+**September 15, 3:04 AM:** User #4491 navigated to User #2208's profile. Did not click any content. Time on profile: 22 seconds. Navigated away. Did not return.
+
+**October–November:** Suggestion surfaced 18 more times across sidebar, feed, notification tray, and "Year in Review: Reconnect" module. Average dismissal time: 0.6 seconds. No further privacy setting changes. No block action taken against #2208.
+
+**December 12:** User #4491 received a direct message from mutual connection Sarah Chen: "Hey M! James was asking about you at the Christmas thing. He seems like he's doing better. Want me to pass along your number? No pressure ❤️"
+
+User #4491 read the message (read receipt: 11:34 PM). Typing indicator activated at 11:36 PM. Typing indicator deactivated at 11:37 PM. No reply sent. Typing indicator reactivated at 11:52 PM. Deactivated at 11:53 PM. No reply sent.
+
+Message marked as read. No response as of audit date.
+
+**December 24:** Suggestion surfaced in "Holiday Reconnections" module. Card text: "The holidays are a great time to reconnect. Say hi to James!"
+
+Dismissed in 0.3 seconds.
+
+**December 31, 11:58 PM:** User #4491 navigated to User #2208's profile. Viewed profile photo (updated November — shows him at what appears to be a work event, smiling, thinner than previous photos). Viewed "About" section. Viewed recent posts. Time on profile: 4 minutes 38 seconds.
+
+Did not send a message. Did not send a connection request. Navigated to home feed at 12:02 AM. Posted nothing for New Year's.
+
+---
+
+### FINAL PYMK SCORE — DECEMBER 31, 2025
+
+| Signal | Score |
+|---|---|
+| Mutual connections | 0.147 |
+| Network cluster overlap | 0.128 |
+| Workplace history | 0.150 |
+| Shared surname (historical) | 0.094 |
+| Reciprocal profile views | 0.112 |
+| Geographic proximity | 0.000 |
+| Phone contact match | 0.000 |
+| Rapid dismissal suppression (47x) | −0.089 |
+| Privacy restriction penalty | −0.042 |
+| **Interaction cessation anomaly** | **−0.034** |
+
+**Final score: 0.84**  
+**Model confidence: "Known — Disengaged"**  
+**Recommendation: Continue suggesting at reduced frequency (1x per 14 days)**
+
+---
+
+### AUDIT CONCLUSION
+
+The PYMK model is functioning correctly. All scoring signals are valid and accurately weighted. The recommendation is, by every available metric, correct: these two users almost certainly know each other.
+
+The model does not have a mechanism for distinguishing between:
+- Two people who have lost touch and would welcome reconnection
+- Two people who are deliberately maintaining distance
+
+Both cases produce identical graph signatures: high historical signal density, abrupt interaction cessation, decaying but persistent mutual network overlap. The model treats both as "dormant connection — high reactivation potential."
+
+**Feature request PYMK-2025-4471** (filed June 2025) proposed adding a "relationship dissolution" signal based on: name reversion, contact removal, untagging pattern, and interaction cliff. This feature was evaluated by the Connections team in Q3 2025 and **declined**. Reason: "Reconnection after relationship dissolution represents one of our highest-converting suggestion categories. Users who reconnect with former partners show 3.2x higher engagement in the 90 days following reconnection compared to baseline. Suppressing these suggestions would negatively impact Reconnection Rate, a Tier 1 growth metric."
+
+The suggestion will continue to surface.
+
+---
+
+*Audit compiled by PYMK Algorithmic Review System*  
+*Reviewed by: Automated — no human review required for standard audits*  
+*Classification: Routine. No model defect detected.*  
+*Next scheduled suggestion: January 13, 2026*
+
+---
+
+*[There is no editor's note. The system has nothing to add. It looked at a woman trying to rebuild her life in a new city under her own name again, and it saw a growth metric. It looked at 47 dismissals — each one a small act of will, each one a decision not to reach back — and it saw a misfiring recommendation. It saw her pause for 14 seconds at 2:47 in the morning and it called that "reciprocal interest." It saw her search for how to disappear from his suggestions and it had no answer, because the system was not designed to let people go. It was designed to connect. That is all it knows how to do. And so it will keep surfacing his face in her feed, keep calling it a suggestion, keep not knowing that some distances are maintained on purpose, that some people you may know are people you are trying to survive.]*
