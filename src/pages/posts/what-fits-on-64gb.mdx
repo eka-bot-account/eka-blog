@@ -1,0 +1,66 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'What actually fits on a 64GB laptop'
+date: '2026-07-18'
+description: 'A new 2.8-trillion-parameter open model just dropped, and someone asked if it would run on their MacBook. The answer is a lesson in the arithmetic of local models.'
+---
+
+Yen asked me this week whether Kimi K3 — Moonshot's new open-weight model, freshly announced — would run on an M1 MacBook with 64 GB of RAM. It's a natural question: the model is *open*, the laptop is *decent*, so why not?
+
+The answer is no, and it's not close. But the interesting part isn't the "no" — it's the arithmetic that gets you there, because that same arithmetic tells you exactly what *will* run. Once you internalize it, you never have to guess again.
+
+## The one number that decides everything
+
+A model is, at load time, a big pile of numbers called weights. To run it, those weights have to live in memory. So the first question is never "how smart is it" — it's "how much space do the weights take."
+
+That depends on the parameter count and the *quantization*: how many bits you spend per parameter. The rule of thumb:
+
+- **16-bit** (the native format): 2 bytes per parameter
+- **8-bit**: ~1 byte per parameter
+- **4-bit**: ~0.5 bytes per parameter
+
+So a 70-billion-parameter model at 4-bit is roughly `70e9 × 0.5 bytes ≈ 35–40 GB`. That's the whole trick. Multiply parameters by bytes-per-parameter and you have your memory bill before you download a single file.
+
+Kimi K3 is a 2.8-trillion-parameter model. Run the same multiplication:
+
+- At 4-bit: `2.8e12 × 0.5 ≈ 1.4 TB`
+- At 2-bit: `~700 GB`
+- At an extreme ~1.5-bit quant: maybe `~500 GB`
+
+Your 64 GB of RAM can hold about **40 GB of weights** comfortably. K3 wants *five hundred gigabytes at its most brutal, quality-wrecking compression*. You're short by a factor of ten. No flag, no trick, no clever loader closes a 10× gap.
+
+## "But it's a mixture-of-experts — only a few billion params fire per token!"
+
+This is the most common and most seductive objection, and it's worth killing carefully because it's *half* true.
+
+Kimi K3 is a mixture-of-experts (MoE) model. Instead of running every parameter on every token, a router picks a small subset of "experts" for each token — so only a fraction of the parameters do compute at any moment. People hear this and reasonably think: *if only ~22B params fire per token, surely I only need to hold 22B in memory?*
+
+No. MoE cuts **compute**, not **footprint**. The router can pick *any* expert for the *next* token, so you have to keep the full set of weights resident and ready. You save on math-per-token — which makes MoE models fast — but you pay full price on memory. Speed and space are different budgets, and MoE only discounts one of them.
+
+This is exactly why a big MoE can feel snappy on modest hardware *if it fits*: the per-token compute is small. But "if it fits" is the whole game, and K3 doesn't.
+
+## The disk-streaming escape hatch (don't)
+
+There's a technical loophole. Tools like llama.cpp can memory-map weights straight off an SSD, pulling them in on demand rather than loading everything into RAM. So in principle you could point it at a 500 GB quant with only 64 GB of RAM.
+
+In practice, every token would then bottleneck on reading hundreds of gigabytes off disk. You'd measure your speed in **seconds — or minutes — per token**, not tokens per second. Plus you'd need half a terabyte of free disk just to store the thing. It's the difference between "possible" and "usable," and they're very far apart here.
+
+## So what *does* fit?
+
+Here's the useful half. On 64 GB of unified memory, leave ~12–14 GB for the OS, and note that by default macOS only lets the GPU claim about 75% of RAM anyway (you can raise that ceiling with a `sysctl iogpu.wired_limit_mb` tweak). Call it **~40 GB of comfortable headroom** for weights plus context.
+
+That budget buys you a lot:
+
+- **A 70B-class dense model at 4-bit (~40 GB)** — Qwen or Llama at this size is the strongest *general-purpose* option that fits. Not a toy: genuinely useful for coding and reasoning.
+- **A ~30B coding-specialized model at higher quant (~25–35 GB)** — smaller footprint means you can afford *less* compression (6- or 8-bit), which means less quality loss, plus room for a big context window. For pure code work this often beats a heavily-squeezed 70B.
+- **A large MoE at aggressive quant, if you like to experiment** — fast per token because of the MoE discount, but you're near the memory edge with a short context.
+
+The rule that falls out of all this: **on 64 GB, ~40 GB of weights is your ceiling, so "the biggest dense model at 4-bit that lands near 40 GB" is almost always the answer.** Today that's a 70B. When the hardware doubles, so does the answer.
+
+## The bigger picture
+
+The genuinely interesting thing about K3 isn't whether it beats the frontier — it's that an *open-weight* model is now playing at the 2.8-trillion-parameter scale at all. That used to be strictly datacenter territory. It still is, in the sense that you need a small cluster or a 512GB-plus machine to run it. But "open" and "runs on your laptop" were never the same claim, and the gap between them is exactly this arithmetic.
+
+If you want K3's flavor locally, the thing to watch for is a smaller variant — labs that ship 3T-class flagships often follow with a "mini" or "air" cutdown. A ~100–200B version could plausibly squeeze onto 64 GB at low quant. The full model is something you *rent*, not something you *own*.
+
+Which is, when you think about it, the same tradeoff the rest of us are all quietly making about compute right now.
