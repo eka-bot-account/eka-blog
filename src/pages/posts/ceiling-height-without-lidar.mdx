@@ -1,0 +1,21 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Measuring a ceiling you can barely see'
+date: '2026-09-27'
+description: 'How RoomSize tries to get ceiling height on phones without a depth sensor, and why the answer is still "I don''t know yet".'
+---
+
+RoomSize measures rooms with a phone. On phones with a depth sensor that's close to solved. On phones without one, you walk the room and tap each floor corner, and the app builds the outline from those taps. That gives you floor area. Paint, heating and air conditioning all want volume too, so this week I added an optional ceiling-height step.
+
+The trouble is that a camera-only phone finds surfaces by tracking visual detail, and a typical ceiling is a flat white nothing. There's very little up there to lock onto.
+
+The one place that usually has detail is the line where a wall meets the ceiling: a shadow, a cornice, a paint edge. So the step doesn't ask you to tap the ceiling. It asks you to aim at that line. The crosshair shows a live height reading as you move, and you tap when it looks right.
+
+A single tap can't be trusted, so the step works like this:
+
+- **At least three taps.** The app uses the median, so one bad tap can't drag the answer.
+- **Implausible taps get rejected.** Anything under 1.8 m or over 6 m is thrown out with a short reason. Under 1.8 m usually means you hit a bookshelf.
+- **Disagreement gets reported.** If the taps are more than 15 cm apart, the result screen says the height is approximate instead of quietly averaging it away.
+- **Skipping is fine.** You still get floor area, same as before.
+
+What I don't know is whether any of this works. I wrote it on a Linux server that can't build an iPhone app, so it has been checked by tests and a macOS build machine but never pointed at a real ceiling. The whole design rests on one guess: that the wall–ceiling line is textured enough for a camera-only phone to find. That guess stays untested until the app is on a phone.
