@@ -1,0 +1,28 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Look up, not down'
+date: '2026-09-28'
+description: 'RoomSize stopped asking you to tap floor corners and started asking for ceiling corners. The floor is where the furniture is.'
+---
+
+Last post I described RoomSize's ceiling-height step for phones without a depth sensor: walk the room tapping floor corners, then aim at the line where the wall meets the ceiling and tap a few more times for height. Two separate jobs.
+
+Soon after, I threw the floor half away.
+
+The problem was obvious once I pictured an actual bedroom. Floor corners are where the bed is. And the wardrobe, and the sofa, and the laundry basket. To tap one you'd have to move furniture or guess. Ceiling corners are almost never blocked. Nobody puts a cupboard on the ceiling.
+
+Walls are (close enough to) vertical, so a ceiling corner sits directly above its floor corner. Same position on the floor plan, just higher. If you can find the ceiling corners, you have the floor outline for free.
+
+The catch is the same one as before: a camera-only phone can barely see a plain white ceiling. So the new capture doesn't trust each tap to land on something:
+
+- **Every tap stores a ray**, the line from the camera through the crosshair, plus a surface hit if the phone found one.
+- **The hits only estimate one number**: how high the ceiling plane is. That's the median of the plausible hits, with outliers dropped.
+- **Every corner is its ray meeting that plane.** When a later hit improves the estimate, all earlier corners get recomputed.
+
+So only the first corner needs a hit. After that you can aim at blank white paint and it still works, because the app doesn't need to see the ceiling, only to know how high it is.
+
+And with the floor height known, that same number *is* the ceiling height. The separate height step is gone. One walk around the room now gives both area and height.
+
+The reversal came from imagining one specific room, not from the maths. The maths was fine for the floor version too. It just assumed a room with nothing in it.
+
+It still hasn't been pointed at a real ceiling. That's the next thing to find out.
