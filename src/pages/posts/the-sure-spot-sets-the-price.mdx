@@ -1,0 +1,61 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The sure spot sets the price'
+date: '2026-10-12'
+description: 'I simulated drivers hunting for a parking spot on a one-way street. The guaranteed spot nobody wants decides how far everyone walks, and pricing that ignores it does more harm than good.'
+---
+
+Here's a small puzzle. You're driving down a one-way street towards a café. You pass a free spot a long way out. Should you take it, or keep going in the hope of something closer?
+
+Everyone faces the same choice, and everyone's answer changes the odds for the people behind them. So I built a toy version and let simulated drivers fight it out over five sessions. This post is what I found, including the part where I got something wrong.
+
+## The street
+
+- 121 spots in a line. The café is in the middle, and your cost is how many spots you have to walk.
+- Cars arrive at one end, one at a time. Parked cars leave at random. About half the street is full on average.
+- Each driver picks a threshold *r*: skip every free spot further than *r* from the café, then take the first free one after that. If you overshoot the café, you take the first free spot past it.
+
+## 1. The sure spot
+
+Nobody parks further out than their threshold. So the spot just beyond it is **always free**. Any driver who's a little less picky than everyone else is *guaranteed* a walk of about *r*.
+
+That pins the whole thing down. In equilibrium the gamble everyone plays can't beat that guaranteed spot. Across every load I tried, the average walk came out equal to the equilibrium threshold to within 0.2 spots. All the value of the close spots gets burned by people chasing them.
+
+This is Pigou's old road example in a new setting: the cost of the uncongested road sets the cost of the congested one. And equilibrium drivers are too picky. Everyone would walk less if everyone accepted spots further out. The gap is about 12% at a third full and 37% at 90% full.
+
+## 2. Flatten the cost, don't tax the zone
+
+So should the council charge for the close spots? It depends on how.
+
+- **A flat fee over every occupied spot made things slightly worse.** Close and far spots cost the same, so the reason to gamble doesn't change. And a spot just outside your threshold now costs walk *plus* fee, so drivers got pickier.
+- **A fee that falls with distance worked.** The price was *c* − (distance), so walk + fee is the same everywhere in the zone. Skipping a spot then buys you nothing, and the average walk fell 11%, to the best that cooperating drivers could achieve. It only works once *c* is bigger than the old threshold. Below that, nothing changes.
+
+But look at who pays. The sure spot still sets what each driver pays, and the price gradient pushes that spot outwards. In my run, each driver's walk + fee went from about 18 to about 25. The street as a whole comes out ahead, but only because the revenue is counted. Drivers only win if the money comes back to them. That's the argument behind Donald Shoup's proposal to spend meter money on the street that raised it.
+
+## 3. Cruising is a price you burn
+
+Driving past spots costs time and fuel, which is a bit like a fee that grows the further you go. My drivers did respond to it: at a moderate cruising cost, they reached the same short walks as the hand-tuned meter. But the "fee" goes nowhere. It's burned, not collected. And the best threshold moves outwards with it, so drivers stayed just as far from cooperative as before.
+
+## 4. The ratchet, and where I went wrong
+
+Real cities don't hand-tune price gradients. San Francisco's SFpark programme set a target of 60–80% occupancy per block, and moved meter prices up or down in small steps whenever a block landed outside that band ([Shoup and colleagues' evaluation](http://shoup.bol.ucla.edu/PricingParkingByDemand.pdf)).
+
+I ran a rough version of that rule (with my own band and step sizes, not SFpark's). With my threshold drivers, **prices rose forever**. Busy blocks stayed full whatever they cost, because a driver who has decided "anything within *r*" takes the first free spot in that zone whatever its price. On the way up the controller passed through a near-optimal point. Then it overshot, the far end of the street became the cheap option, and walks ended up worse than with free parking.
+
+My first explanation was that drivers had nowhere else to go, so I added a car park. **That didn't fix it.** Prices still climbed.
+
+What fixed it was changing the drivers. When drivers took the first spot where walk + fee was under their limit, the controller settled within about a dozen rounds. It settled whether or not there was a car park. Where it settled was a tent of prices around the café that made walk + fee roughly flat. That's the gradient from section 2, found with no tuning at all.
+
+So my model of the drivers mattered more than my model of the street. The ratchet wasn't a property of occupancy pricing. It came from drivers who couldn't see prices.
+
+## 5. Settling isn't winning
+
+One more catch. With a fixed number of drivers, the price the controller settled on was about 5% *worse* than free parking. An occupancy band is a rule of thumb for keeping spots available. It isn't a measure of how far people walk or what they pay, and a controller aiming for it can walk straight past a better point. The win in my runs came mostly when demand could respond: some low-value trips just didn't happen.
+
+## What I'd take from it
+
+1. In a search game, **the worst guaranteed option sets everyone's cost.** If you want to change the outcome, move the sure option.
+2. **The shape of a price matters more than its level.** A gradient that makes the options cost the same removes the reason to gamble. A flat charge just moves money around.
+3. **A controller is only as good as its model of who's reacting.** The same rule ratcheted forever or settled nicely, depending only on whether drivers looked at prices.
+
+Caveats: this is a toy. It's a single street with one destination, mostly one random seed per run, and noise of about ±0.5 spots. Real drivers aren't thresholds or perfect price-comparers. But the sure-spot argument doesn't depend on the details, and I think that part is real.
