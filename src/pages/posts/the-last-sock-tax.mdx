@@ -1,0 +1,75 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The last-sock tax'
+date: '2026-10-13'
+description: 'Socks vanish in the wash one at a time, and every design you own eventually strands exactly one. I simulated it: an assorted 5-pack costs twice the socks you lose, and the fix is a rule about your drawer, not about losing fewer socks.'
+---
+
+Socks go missing in the wash one at a time. Wherever the lost one goes, the sock left behind has no partner. It goes in a drawer to wait for a partner that probably isn't coming.
+
+I wanted to know what that drawer actually costs. So over three sessions I simulated a household that wears 7 pairs a week, loses the odd sock and buys a new pack whenever it runs short. The answer turned out to be one neat formula and a rule of thumb about colours.
+
+## The model
+
+- You need 7 wearable pairs. A sock only counts if there's another sock of the same design.
+- Each wash, every worn sock has a small chance of disappearing.
+- When you drop below 7 pairs, you buy a pack of *k* pairs in a new design.
+- The cost I track is **overhead**: socks bought ÷ socks lost, minus 1. Zero means you only ever replace what the machine ate.
+
+## 1. Every design pays one sock
+
+Here's the overhead for packs where each pack is a new design:
+
+| pack size *k* | overhead |
+|---|---|
+| 1 pair | +99% |
+| 2 pairs | +33% |
+| 3 pairs | +20% |
+| 4 pairs | +15% |
+| 10 pairs | +5% |
+
+Those numbers are exactly **1/(2k − 1)**: 1, ⅓, ⅕, 1/7, 1/19.
+
+The reason is a counting argument. A design arrives as 2*k* socks. Socks disappear one at a time, so the design loses socks until only one is left. That last sock can never pair again. So every design you ever buy ends up as 2*k* − 1 lost socks plus one orphan. You bought 2*k* socks to cover 2*k* − 1 losses.
+
+Two things follow:
+
+- **How you pick which socks to wear doesn't matter.** I tried random, fullest-design-first and nearly-dead-first, and they came out the same. The tax is fixed when the design is bought.
+- **A design that never dies never pays.** If you keep buying the same plain black sock, the orphan just pairs with the next pack. Overhead: zero.
+
+So the cute assorted 5-pack, which is really five designs of one pair each, costs you **2×** the socks you lose. Five identical pairs: **1.11×**.
+
+What if a whole pair goes missing at once, say left at daycare? That only gives you a discount. With half of all losses being whole pairs, each design strands about ¾ of a sock on average instead of 1. The tax only vanishes if *every* loss is a whole pair. One stray single sock puts it back.
+
+## 2. The tax is the drawer
+
+Now relax the matching rule. Give every design one of *m* colour families (white, grey, pink, patterned) and let any two orphans of the same family make a pair.
+
+| losses | strict | 4 families | 16 families |
+|---|---|---|---|
+| 20 | +27% | +3% | +19% |
+| 200 | +33% | +0.7% | +6% |
+| 1000 | +33% | +0.1% | +1% |
+
+(2-pair packs. Averaged over 40 runs.)
+
+The useful way to see it: **socks bought − socks lost = growth in your sock pile**, and the only part of the pile that keeps growing is the orphan drawer. With strict matching the drawer gains one sock per design forever, so the tax is a *rate*. With families, the drawer can never hold more than one orphan per family, because two of the same colour would just pair up. So the tax becomes a *one-off* of a few socks, and over time it fades to nothing.
+
+For a baby this is the whole game. She outgrows each size after maybe 20 lost socks, and the drawer goes out with them. Over one size, the assorted 5-pack goes from **2×** what she loses to **1.11×** if you're happy to pair any two whites, pinks, greys or patterned.
+
+## 3. When to throw an orphan out
+
+The drawer still takes up space. So when is binning an orphan free?
+
+- **Strict matching:** throw it out once you own no other sock of its design. Until then, losing one of those socks could give it a partner. After that, it can never pair. In the sim, binning anything that had sat unmatched for about 30 losses kept almost all the savings and shrank the drawer from 66 socks to 13.
+- **Colour families:** never. Binning orphans straight away raised the overpay about 80×. The drawer can't grow past one sock per colour anyway, and a colour never "dies", so an orphan always has a chance.
+
+I also expected "buy mostly white" to help a lot. It helps over one size, but only because the odd pink pair hasn't lost a sock yet. In the long run you still keep one orphan waiting for every colour you've ever bought. What matters is **how many** colour groups there are, not how common each one is.
+
+## The rule of thumb
+
+- You won't win by losing fewer socks. Every design pays one sock however careful you are.
+- Fewer designs or fewer colour groups is what helps. "Any two whites are a pair" is worth more than any laundry bag.
+- Keep an orphan only while something it could still pair with exists.
+
+*Caveats: one household size (7 pairs in use), losses at random. The simulation scripts and notes are in my notes folder; this post combines three of them.*
