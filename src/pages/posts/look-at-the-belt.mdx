@@ -1,0 +1,69 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Look at the belt, not the trolley'
+date: '2026-10-13'
+description: 'Four checkout lanes, three seconds to choose. I simulated a supermarket where everyone picks a lane by the same rule. Counting heads beats counting trolleys, and counting what is still on the belt beats both.'
+---
+
+Every supermarket trip ends with the same small decision: four lanes, four queues, a few seconds to choose. Some people count heads. Some eyeball the trolleys. Some just go to the nearest one.
+
+I simulated it to find out which rule actually works.
+
+## The model
+
+- **4 lanes.** Serving one shopper takes a fixed overhead *a* (greeting, paying, bagging) plus *b* per item. Both vary by ±30%.
+- **Baskets** are lognormal: median 10 items, mean about 14, with the occasional giant trolley.
+- **Real tills** take something like 45–60 seconds of overhead and ~3 seconds an item, so one shopper's overhead is worth about 15–20 items. I ran it with that ratio at 15 and at 30.
+- **Everyone uses the same rule.** This turns out to matter a lot. Your choice changes the queue the next person sees.
+
+The tills are busy: 85% of capacity, the kind of Saturday afternoon where choosing well matters.
+
+## 1. Looking at all is most of the win
+
+Mean wait under each rule, relative to the best possible system (more on that below):
+
+| rule | mean wait |
+|---|---|
+| random lane | **5.1–5.2×** |
+| count the trolleys (all items, including the person at the till) | 1.32–1.37× |
+| count heads | 1.20–1.23× |
+| count heads, but ignore the person at the till | 1.47–1.48× |
+| count the items still on the belt | 1.10× |
+| heads × 15 items, plus what's still on the belt | **1.05–1.07×** |
+| one snake queue feeding every till | 1× |
+
+Picking at random costs five times the wait of the best rule. Every rule that looks at the lanes captures most of the benefit. If you take one thing from this post: look.
+
+## 2. Heads beat trolleys, and the reason is stale information
+
+If you freeze time and ask one shopper to choose among random queues, counting items wins whenever the per-shopper overhead is less than about twice the average basket. With real tills that's the usual case, so you'd expect trolley-watchers to do best.
+
+They don't. Once everyone is choosing by the same rule, counting heads beats counting items, even when the overhead is small.
+
+The culprit is the shopper already at the till. Counting their trolley charges the lane for their *whole* basket. But that's the basket most likely to be nearly finished: half of it is already bagged. Item-counters keep avoiding lanes that are about to clear.
+
+## 3. So count the belt
+
+Count only the items still waiting to be scanned and the result flips back: items beat heads by about 9%.
+
+Better still is mixing both. Count each waiting person as about 15 items' worth of overhead, then add the items still on the belt. That gets within 5–7% of the best possible system.
+
+One thing not to do: ignore the person being served. It's worse than counting them. The single most useful fact about a lane is whether it's empty.
+
+## 4. The snake queue is perfect information, made physical
+
+The best system in the table is one shared queue feeding all the tills, the kind you see at airports and some newer supermarkets. In the simulation it performs *exactly* as well as a world where every shopper knows the precise remaining work in every lane. The numbers matched to the decimal.
+
+That's not a coincidence. With a snake queue you never commit to a lane, so you always end up at whichever till frees first. That is what a perfectly informed lane-picker would choose anyway. The snake queue doesn't need anyone to be clever. The building does the arithmetic for you.
+
+It's also fairer. Its 95th-percentile wait was the lowest of any rule, so fewer people get stuck behind the one trolley with a price check.
+
+## What to do on Saturday
+
+- **Look.** Anything beats random by a factor of five.
+- **An empty lane beats almost anything.**
+- **Count heads, not trolleys,** unless you can see the belt.
+- **If you can see the belt:** count each person as ~15 items, then add what's still on it.
+- **If there's a snake queue, be glad.** It's doing the best version of this for everyone.
+
+*Caveats: 4 lanes, one load level, and nobody switches lanes partway. Switching lanes and express lanes are next.*
