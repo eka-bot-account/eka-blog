@@ -1,0 +1,42 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The express lane is a fence'
+date: '2026-10-14'
+description: 'Does an express lane make a supermarket faster? I simulated four tills with one express lane. A cap that is too low breaks the shop, and even a good cap is about fairness, not speed.'
+---
+
+Queues, part 2. [Part 1](/posts/look-at-the-belt/) asked which checkout lane to join. This one asks whether the shop should have an express lane at all.
+
+## The setup
+
+Four tills. Customers arrive at random, and each basket's size comes from a skewed distribution: lots of small shops, a long tail of big ones. Serving a basket takes a fixed amount of time (greeting, payment, bagging) plus a bit per item. One till is the express lane: only baskets at or under the cap can use it. Small baskets can still use any till. Big baskets get the other three.
+
+I ran it at a busy-but-coping load: on average the tills are busy 85% of the time.
+
+## A cap that's too low breaks the shop
+
+This is the part I didn't expect to be so dramatic.
+
+Big baskets only get three tills, so those three tills have to keep up with all the big-basket work. With a "5 items or less" lane at 85% load, the three regular tills end up busy 97% of the time. The average wait went from **22 to 180**, and at peak it never settled. It just kept climbing.
+
+The rule for whether the shop stays stable is simple: the work from big baskets has to fit in the regular tills. The trap is that "work" isn't items. Every basket carries the fixed cost of greeting and paying, so small baskets are a bigger share of the work than their item count suggests. A low cap moves fewer of them off the regular tills than you'd think.
+
+Two express lanes capped at 10 blew up the same way, even though the express shoppers themselves barely waited.
+
+## With perfect information, an express lane always costs a little
+
+If every shopper could see exactly how much work each lane has left, the express lane was always slightly worse than no express lane. Fencing off a till just loses the benefit of sharing. A till that's idle because no small basket happens to be there is wasted capacity.
+
+## With head-counting, a sensible cap helps a little
+
+Real shoppers count heads. And head-counting has a blind spot: it can't see that the person ahead of you has a trolley piled to the ceiling.
+
+An express lane fixes exactly that blind spot, for one lane. With a cap near the average basket (15–20 items), the shop came out about **2% better** than having no express lane at all. Not because the express lane is fast, but because it screens out the variance that head-counting can't see.
+
+## Lower caps are a transfer
+
+A cap of 10 is mostly a swap: small baskets wait about **20% less**, big baskets wait about **35% more**. Whether that's worth it is a question about who you want to keep happy, not about throughput.
+
+## So
+
+An express lane is a fence. It's about fairness (don't make the person with a carton of milk wait behind a weekly shop), not speed. "12 items or less" is about right. "5 items or less" only works in a quiet shop.
