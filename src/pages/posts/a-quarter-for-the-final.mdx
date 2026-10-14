@@ -1,0 +1,85 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Spend a quarter of the games on the final'
+date: '2026-10-14'
+description: 'If you want a tournament to crown the actual best player, what format should you use? I simulated sixteen players. Extra lives beat a round robin at every budget, and the best design spends about a quarter of its games on a best-of final.'
+---
+
+Suppose you run a tournament and you care about one thing: that the player who really is best ends up winning. You have a budget of games. How should you spend them?
+
+I simulated it. Sixteen players, each with a hidden strength. Any game between two of them is a weighted coin flip: the stronger player is more likely to win, but upsets happen. I tried three kinds of field: tight (everyone close), medium, and spread out (a few players far ahead). For each format I ran thousands of tournaments and counted how often the truly best player took the title.
+
+## The usual formats
+
+For the medium field:
+
+| format | games | best player wins |
+|---|---|---|
+| knockout, random draw | 15 | 37% |
+| knockout, perfect seeding | 15 | 41% |
+| double elimination | ~30 | 45% |
+| Swiss, 4 rounds | 32 | 37% |
+| Swiss, 7 rounds | 56 | 44% |
+| round robin | 120 | 51% |
+| double round robin | 240 | 62% |
+
+Three things stood out.
+
+**A four-round Swiss for 16 players is a knockout with 16 extra games.** Swiss pairs players with the same score. So after round one, the 1–0 players play each other, then the 2–0 players, and so on. The unbeaten bracket goes 8, 4, 2, 1, which is exactly a single-elimination tree. It picked the best player just as often as a random-draw knockout did, to within noise, in every field. The other 16 games sort out the bottom half, which is what Swiss is actually good for.
+
+**Seeding barely matters.** Perfect seeding added only 3–5 points. It stops the top two meeting early, but they still have to get through the final.
+
+**Double elimination got close to a round robin with a quarter of the games**, and in the spread-out field it matched it. That made me look at lives as the thing to turn up.
+
+## Lives beat leagues
+
+Generalise double elimination to *k* lives. Each round, pair up the players still alive (those with the most lives left play each other), the loser loses a life, and the last one standing wins.
+
+| format | games | tight | medium | spread |
+|---|---|---|---|---|
+| 1 life | 15 | 22% | 37% | 57% |
+| 2 lives | 31 | 28% | 45% | 68% |
+| 4 lives | 62 | 37% | 56% | 75% |
+| 8 lives | 125 | 44% | 66% | 81% |
+| round robin | 120 | 37% | 49% | 65% |
+
+At the same number of games, lives beat the round robin in every field, **including the tight one**. I'd first guessed that leagues win when everyone is close. That guess came from comparing a 30-game format with a 120-game one. Once the budgets match, the league loses everywhere. Six lives beat a *double* round robin with 40% of the games.
+
+The reason is that elimination spends games where they matter. Games keep going to the players who can still win. A round robin spends most of its 120 games on pairs that can't affect who wins.
+
+## Why more lives stop paying
+
+Each extra life helps less than the one before. The first extra life is worth 7–11 points. After that, each doubling of lives cuts the error by only about 20%.
+
+The cause is the runner-up. Whenever #2 is nearly as strong as #1, telling them apart takes a lot of games between *those two*. When I measured where the deciding information comes from, almost all of it came from games #1 and #2 played against each other, about one meeting per life. Games against the rest of the field don't separate them. When the top two are that close, a game against #9 is just as likely to cost either of them a life.
+
+That makes the error fall like one over the square root of the number of games. This isn't specific to lives. Any format slows down this way once the top two are near-tied. Formats differ only in how many of their games those two actually play against each other.
+
+## So add a final
+
+If head-to-head games between the top two are what matter, give them more: play a few lives, then a best-of final between the last two.
+
+A long final can't do it on its own. With one life and a best-of-61 final, the best player wins only 48%, because they often go out in the knockout before the final. You need both: enough lives to get #1 to the final, and a final long enough to settle it.
+
+So I searched every split of a fixed budget between lives and final length:
+
+| budget | tight | medium | spread | final's share of games |
+|---|---|---|---|---|
+| 40 | 32% | 53% | 74% | 22% |
+| 90 | 45% | 65% | 82% | 28% |
+| 180 | 55% | 74% | 87% | 27% |
+| 350 | 63% | 81% | 90% | 27% |
+
+**The final should get about a quarter of the games.** That held at every budget, and the best split was almost the same for tight, medium and spread-out fields. How spread out the field is changes how well you can do, not how you should spend the games.
+
+At around 125 games, the best hybrid (5 lives plus a best-of-61 final) got 70% against 65% for 8 lives with no final. That's about the accuracy you'd otherwise need roughly 40% more games to reach.
+
+The optimum is also flat. Anything near the right split does about as well, so you don't need to fine-tune.
+
+The share shrinks as the field grows: about 45% for 8 players, 27% for 16, 23% for 32. There's a simple reason. In the early rounds, the best player is in only a small slice of the games, and only some of those are against the rival, so each early game tells you less about the winner when the field is bigger.
+
+## The rule
+
+To find the best of 16 with a budget of B games: give everyone about B ÷ 21 lives, and save about a quarter of the budget for a best-of final between the last two. Use less for the final with a bigger field. A round robin is the wrong tool for picking a winner. It's a fine tool for ranking everyone, which is a different question I haven't tested yet.
+
+<small>Model: 16 players, logistic win probability on normally distributed strengths (spread σ = 0.5, 1, 2). 3,000–6,000 simulated tournaments per cell. The double-elimination losers bracket pairs losers as they arrive rather than following a printed bracket sheet.</small>
