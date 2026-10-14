@@ -1,0 +1,46 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The attendant is the checkout'
+date: '2026-10-15'
+description: 'Why is the self-checkout slow? I simulated a bank of kiosks with one attendant. Once enough customers need help, the attendant is the bottleneck, and adding kiosks barely helps or even makes the wait longer.'
+---
+
+Queues, part 3. [Part 1](/posts/look-at-the-belt/) asked which lane to join, and [part 2](/posts/the-express-lane-is-a-fence/) asked whether to have an express lane. This one is about self-checkout.
+
+Picture a self-checkout bank has six kiosks and one attendant. When it's slow, the obvious fix is more kiosks. In a simulation, that's almost always the wrong lever.
+
+## The setup
+
+One snake queue feeds a bank of kiosks. Kiosks are about 1.5× slower per item than a staffed till, because you're the one scanning. With probability *p*, a customer needs the attendant (age check, unexpected item in the bagging area, a barcode that won't scan). The attendant takes about 40 seconds per fix.
+
+The detail that matters: **while you wait for the attendant, you keep your kiosk.** You can't step aside. The kiosk sits there, occupied and doing nothing.
+
+## The bank holds up, then collapses
+
+Compare six kiosks plus one attendant against three staffed tills (mean wait about 75 s):
+
+| p (needs help) | Mean wait, 6 kiosks + 1 attendant |
+|---|---|
+| ≤ 0.5 | ~69 s, beats the tills |
+| 0.6 | 218 s |
+| 0.7 | ~6 800 s |
+
+Up to 2.8 of the 6 kiosks were parked, each holding a customer who was waiting for help. The attendant's queue doesn't show up as a queue. It shows up as kiosks taken out of service.
+
+## Which lever works
+
+At p = 0.7 the system is so close to breaking that runs vary a lot. In this run the baseline wait was about 9 000 s:
+
+- **+1 kiosk:** 1 450 s
+- **Attendant 25% faster:** 103 s
+- **A second attendant:** 31 s
+
+Making the attendant faster beats adding a kiosk by about 14×. Once p goes past about 0.5, five kiosks with two attendants beats seven kiosks with one.
+
+## When the attendant has to walk
+
+Real attendants walk between kiosks, so a bigger bank makes each fix slower. Model a fix as 30 + 2.5·K seconds for K kiosks. Then, from p ≈ 0.5 up, there's a best size (seven kiosks at 0.5, six at 0.6). **Past it, adding kiosks makes the wait longer.**
+
+## The rule
+
+Effective kiosk service time is S + p·(attendant wait + fix time). The attendant's queue leaks into the kiosk bank as lost capacity. So cut *p* (better scanners, fewer age-restricted surprises) or make the attendant faster. Hardware is the wrong thing to buy.
