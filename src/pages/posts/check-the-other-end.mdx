@@ -1,0 +1,61 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Check the other end, not the sky'
+date: '2026-10-16'
+description: 'With umbrellas split between home and the office, the drier the climate, the more often you get caught in the rain without one. A weather forecast barely helps. One small rule fixes it completely: on a dry day, bring an umbrella only if the place you are going has none.'
+---
+
+You keep a couple of umbrellas, some at home and some at the office. Each day you go to work and come back. If it's raining when you leave and there's an umbrella where you are, you take it. If there isn't one, you get wet.
+
+It's an old probability puzzle, and I simulated it (400,000 trips per setting) to see what actually goes wrong. The answer surprised me: the problem isn't the rain. It's where the umbrellas end up.
+
+## Dry places are worse
+
+Here's how often you get wet, as a share of the trips where it's actually raining:
+
+| Umbrellas | Rain on 10% of trips | 30% | 50% |
+|---|---|---|---|
+| 1 | 47% | 41% | 33% |
+| 2 | 31% | 26% | 20% |
+| 3 | 23% | 19% | 14% |
+| 5 | 16% | 12% | 9% |
+
+Read across a row: the *less* it rains, the more likely you are to be caught out on the days it does. With one umbrella and rain one trip in ten, you're without it nearly half the time it rains.
+
+The reason is that umbrellas only move when it rains. You carry one to the office in a morning shower, the afternoon is fine, and it stays there. In a wet climate the next shower soon carries it back. In a dry one it can sit at the office for weeks, and every umbrella you own slowly collects at whichever end the last storm left it. Sydney is somewhere in the 10–30% range, so this is the bad corner.
+
+## A forecast doesn't really help
+
+The obvious fix is to check the weather and take an umbrella when rain is forecast. But from the umbrellas' point of view, a forecast that's 90% right just means you sometimes carry one on a dry day for no particular reason. With two umbrellas and 10% rain, that costs about one pointless carry every 16 trips and moves your wet rate from 31% to 29%. Hardly anything.
+
+The odd part: a *worse* forecast, one that's only 70% right, leaves you drier. Its false alarms make you carry umbrellas around more often, and that accidentally spreads them out. So the forecast isn't working as information about the weather. It works, a little, as random shuffling.
+
+## The rule that fixes it
+
+Here's the rule: **on a dry trip, take an umbrella only if the place you're going has none.**
+
+That's all. And it means you never get wet, because wherever you are always has at least one umbrella. The only way to be stuck is to arrive somewhere empty, and the rule never lets that happen.
+
+It's also cheap. With two umbrellas and 10% rain it costs one dry carry every 12 trips or so, about the same as following the forecast, but it takes you from wet 31% of the time to never. With three umbrellas it's one every 23 trips.
+
+Compare a stricter rule, "always keep them evenly split": that also keeps you dry, but with three umbrellas it has you carrying one on 90% of trips. Trying to keep everything balanced is expensive. Only fixing the end that's empty is cheap.
+
+(With one umbrella the rule just means "always take it", which is fair enough.)
+
+## You don't have to remember every time
+
+Nobody tracks their umbrellas perfectly. So I tested a forgetful version: some of the time you just assume the other end is fine.
+
+| Setup | Always remember | Forget 10% | Forget 25% | Forget half the time | Never check |
+|---|---|---|---|---|---|
+| 2 umbrellas, 10% rain | 0% | 0.9% | 2.5% | 6.4% | 31% |
+| 3 umbrellas, 10% rain | 0% | 0.5% | 1.4% | 3.5% | 23% |
+| 2 umbrellas, 30% rain | 0% | 1.7% | 4.4% | 10% | 26% |
+
+There's no cliff. Getting wet rises roughly in step with how often you forget, and remembering only half the time still cuts it about five-fold. A quick look by the office door now and then gets you most of the benefit.
+
+## The general idea
+
+Anything you keep in two places behaves like this. Stuff drifts to wherever it was last needed, and the rarer the need, the longer it stays stranded there. Phone chargers end up by the bed and not the desk. Shopping bags end up in the kitchen and not the car. Nappies end up in the change table and not the nappy bag.
+
+The tempting fix is to watch the thing that creates the need: the sky, the calendar, the forecast. The better fix is to watch the empty end, and top up only that.
