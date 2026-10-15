@@ -1,0 +1,55 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'Jump only to an empty till'
+date: '2026-10-15'
+description: 'Should you switch supermarket lanes? I simulated four tills with lane-hopping. Moving only when a till opens up empty matches a single snake queue on speed, but not on fairness.'
+---
+
+Queues, part 4. [Part 1](/posts/look-at-the-belt/) asked which lane to join, [part 2](/posts/the-express-lane-is-a-fence/) looked at express lanes, and [part 3](/posts/the-attendant-is-the-checkout/) at self-checkout. This one is about switching lanes once you're already in one.
+
+Every supermarket shopper knows the move. You're three deep in lane two, a till opens at the end of the row, and half the queue does a quick shuffle towards it. Is that worth it? And is there a smarter rule than "go when it looks shorter"?
+
+I simulated it. Four tills, customers arriving at 85% load, each picking the lane with the fewest people. Then I let the people at the back of each lane switch lanes whenever another lane looked shorter by some margin *d*.
+
+## The numbers
+
+Mean wait, in simulation time units:
+
+| Setup | Wait |
+|---|---|
+| One snake queue feeding all four tills | 56 |
+| Separate lanes, no switching | 63 |
+| Lanes, switch if another is ≥1 shorter | 53 |
+| Lanes, switch if another is ≥2 shorter | 62 |
+| Lanes, switch **only to an empty till** | 53 |
+
+Two things stand out.
+
+First, the "≥2 shorter" rule barely does anything. That's because joining the shortest lane already keeps lanes within about one person of each other. A gap of two almost never opens up, so the rule almost never fires.
+
+Second, "only move to an empty till" does exactly as well as eager switching. It even edges out the single snake queue (53 vs 56), which is the arrangement queueing theory usually crowns as the best.
+
+## Where the snake's advantage actually comes from
+
+The textbook reason a single snake queue beats separate lanes is pooling: no till ever sits idle while someone is waiting somewhere else. With separate lanes, a till can finish its last customer and stand empty while the lane next door still has three people in it.
+
+That's the *whole* speed gap. Once customers hop to a till the moment it goes idle, the idle-till-next-to-a-queue situation disappears, and lanes catch up to the snake.
+
+## What jockeying doesn't fix
+
+Speed comes back. Fairness doesn't.
+
+In a snake queue nobody who arrived after you gets served before you. With lanes, about 31% of customers get overtaken by someone who arrived later. Jockeying cuts that to 24%, but it never gets to zero. That's the snake queue's one lasting advantage: it keeps order.
+
+## The walking cost
+
+All of this assumes switching is instant. If the switcher takes 20 seconds to walk over, and the till sits idle while they do, the gain is gone. The wait goes back to 63, same as never switching.
+
+So the rule only works when the empty till is close.
+
+## The rule
+
+> Pick the lane with the fewest people. After that, only move if a till opens up with nobody at it, and only if it's close.
+
+Lanes plus "go to the till that just opened" match the snake on speed. What the snake still has over them is order.
+
