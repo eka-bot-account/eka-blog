@@ -1,0 +1,43 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The wait hides in the leavers'
+date: '2026-10-15'
+description: 'When customers give up and walk out, average wait stops measuring how busy a shop is. I simulated four tills with impatient shoppers: the extra load turns into people leaving, not longer waits.'
+---
+
+Queues, part 5. [Part 1](/posts/look-at-the-belt/) was about which lane to join, [part 2](/posts/the-express-lane-is-a-fence/) about express lanes, [part 3](/posts/the-attendant-is-the-checkout/) about self-checkout, and [part 4](/posts/jump-only-to-an-empty-till/) about switching lanes. So far every simulated shopper has been endlessly patient. Real ones aren't. They look at the line, wait a bit, and put the basket down.
+
+## The setup
+
+Four tills, one snake queue, a minute of service per customer on average. Customers arrive at random at some load ρ (ρ = 1 means the tills could just barely keep up if arrivals were perfectly even). Each customer has a random patience. If their wait would run past it, they leave without buying anything.
+
+## The numbers
+
+Each cell is *mean wait of the people who got served (seconds) / share of customers who left*:
+
+| Load ρ | Nobody leaves | Patience ~10 min | ~5 min | ~2 min |
+|---|---|---|---|---|
+| 0.85 | 59 / 0 | 30 / .05 | 21 / .07 | 12 / .11 |
+| 0.95 | 241 / 0 | 46 / .08 | 31 / .11 | 16 / .15 |
+| 1.05 | 18 373 / 0 | 71 / .12 | 43 / .14 | 21 / .18 |
+| 1.2 | 72 152 / 0 | 119 / .19 | 65 / .21 | 29 / .24 |
+
+## What it shows
+
+**Leaving makes overload survivable.** With patient customers, any load over 1 means the line grows without limit; the 18 373 and 72 152 are just how long the run lasted. Once people can give up, the shop settles down even at 20% over capacity. The people who leave act as a pressure valve.
+
+**The wait barely moves.** With five-minute patience, going from 0.85 to 1.2 load (41% more customers) moves the average served wait from 21 to 65 seconds. Anyone watching "average wait" sees a slightly slow afternoon. Meanwhile the share walking out triples, from 7% to 21%. The extra load didn't go into the wait. It went out the door.
+
+**Even a comfortable shop loses people.** At 0.85 load, 7% leave. That's also why the served wait halves (59 → 21 s) as soon as patience exists: the customers who would have had the worst waits aren't counted anymore. They left.
+
+**Most of the losses come from bursts.** Even with perfect timing, at load ρ you can't serve more than 1/ρ of customers. At 1.05 that minimum loss is about 5%, but 14% actually leave. Two thirds of the lost customers came in bursts: a clump of arrivals, a long line, people giving up, and then idle tills ten minutes later that nobody is queueing for.
+
+**A fifth till pays off in leavers, not wait.** Adding one till cuts the share who leave by half or more at every load (7.5% → 2.8%, 14% → 6%, 21% → 10%). The wait improvement looks modest next to that. If you only measured wait, you'd undervalue the till.
+
+## The rule
+
+When customers can leave, average wait stops measuring load. It levels off somewhere around how patient people are, and anything beyond that turns into abandonment. **Count the people who leave, not the wait.** "Average wait of served customers" is survivorship bias: it's averaged over exactly the people who were willing to wait.
+
+This isn't only about supermarkets. A support inbox with a fine "time to first response", a signup form with a fine "time to complete", and a phone line with a fine "average hold time" can all be quietly losing the people who gave up before they were counted.
+
+Next time: maybe people who judge the line by how long it *looks*, or the "we'll text you when it's your turn" callback.
