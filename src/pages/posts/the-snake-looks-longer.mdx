@@ -1,0 +1,49 @@
+---
+layout: '../../layouts/Post.astro'
+title: 'The snake looks longer'
+date: '2026-10-15'
+description: 'People decide whether to queue by counting heads, not by estimating the wait. A single snake queue for four tills shows four times as many heads for the same wait, so it scares off more customers than separate lanes do, unless you post the wait.'
+---
+
+Queues, part 6. [Part 4](/posts/jump-only-to-an-empty-till/) found that a single snake queue feeding all the tills is faster than separate lanes. [Part 5](/posts/the-wait-hides-in-the-leavers/) looked at customers who join and then give up. This one is about the customers who never join at all: they look at the line, decide it's too long, and walk past.
+
+The catch is *how* they decide. Nobody standing at the end of a line works out the expected wait. They count heads.
+
+## Why that matters
+
+With four tills, a snake of 12 people is about a 3-customer wait, because four tills are pulling from it. A lane with 12 people in front of you is a 12-customer wait. Same number of heads, four times the wait. So the snake *looks* four times worse than it is, compared with a lane.
+
+## The setup
+
+Four tills, a minute of service per customer on average, random arrivals at load ρ. On arrival, a customer looks at the line and walks away if they see too much. I tried two ways of judging:
+
+- **Counting heads:** walk away if there are 6 or more people waiting ahead. With a snake that's the whole queue. With lanes it's the shortest lane.
+- **Reading a sign:** walk away if the expected wait is more than 6 minutes, as if there were a sign at the end of the line saying "about N minutes from here".
+
+## The numbers
+
+Share of customers who walk away / mean wait of those who stay:
+
+| Load ρ | Snake, counting heads | Lanes, counting heads | Snake with a wait sign |
+|---|---|---|---|
+| 0.85 | 4.9% / 26 s | 0.5% / 74 s | 0.2% / 63 s |
+| 1.0 | 11% / 39 s | 4.7% / 155 s | 3.8% / 173 s |
+| 1.2 | 21% / 52 s | 17% / 233 s | 17% / 289 s |
+
+## What it shows
+
+**When people count heads, the snake drives them off.** At a busy-but-coping 0.85 load, the snake loses ten times as many customers as lanes do (4.9% vs 0.5%). Its line looks long because it *is* long, in heads. It just moves four times faster than it looks.
+
+**Lanes keep customers by hiding how many there are.** Each lane shows you only a quarter of the crowd. People join, and then wait three times as long as they would have in the snake. Lanes win on customers kept and lose on wait. If you're the shop counting sales, that trade can look like a good deal.
+
+**A wait sign gets you both.** Put the expected wait at the end of the snake and the same customers, with the same tolerance, now judge time instead of heads. At 0.85 load the snake loses 0.2%, fewer than the lanes, and those who stay still wait less (63 s vs 74 s). That's why a theme park sign says "45 minutes" rather than letting you count the people. Hiding part of the line works too, but only partly: folding half the snake out of sight cut the losses to 1.5%.
+
+**At overload, nothing helps much.** At 1.2 load all three settle near 17–21% lost, because you can't serve more than 1/1.2 of the customers however you arrange them. The arrangement matters most in the range where the shop is busy but could keep up.
+
+## The rule
+
+A snake queue is faster than lanes, but it looks about as many times longer as there are tills, and people judge the line, not the wait. **If you run a snake, show the wait, not the heads.**
+
+One caveat: I gave everyone the same tolerance and made them count heads literally. Some shoppers know the snake feeds four tills and adjust for it. Real people are somewhere between the two rules, so the real gap is smaller than the table shows. But the direction holds: the more people go by heads, the more the snake costs you at the door.
+
+Next: callbacks and "we'll text you when it's your turn", which hide the line completely.
